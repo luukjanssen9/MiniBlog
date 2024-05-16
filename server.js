@@ -138,7 +138,7 @@ app.get('/avatar/:username', (req, res) => {
     // TODO: Serve the avatar image for the user
 });
 app.post('/register', (req, res) => {
-    // TODO: Register a new user
+    registerUser(req, res);
 });
 app.post('/login', (req, res) => {
     // TODO: Login a user
@@ -175,6 +175,12 @@ let users = [
 // Function to find a user by username
 function findUserByUsername(username) {
     // TODO: Return user object if found, otherwise return undefined
+    for (let i = 0; i < users.length; i++) {
+        if (users[i].username == username) {
+            return users[i];
+        }
+    }
+    return undefined;
 }
 
 // Function to find a user by user ID
@@ -184,7 +190,13 @@ function findUserById(userId) {
 
 // Function to add a new user
 function addUser(username) {
-    // TODO: Create a new user object and add to users array
+    let user = {
+        id: users.length,
+        username: username,
+        avatar_url: undefined,
+        memberSince: new Date()
+    };
+    users.push(user);
 }
 
 // Middleware to check if user is authenticated
@@ -199,7 +211,17 @@ function isAuthenticated(req, res, next) {
 
 // Function to register a user
 function registerUser(req, res) {
-    // TODO: Register a new user and redirect appropriately
+    const username = req.body.username;
+    console.log("Attempting to register:", username);
+    if (findUserByUsername(username) !== undefined) {
+        // username already exists
+        res.redirect('/register?error=Username+already+exists');
+    } else {
+        // add the new user
+        addUser(username);
+        console.log("added");
+        res.redirect('/login');
+    }
 }
 
 // Function to login a user
