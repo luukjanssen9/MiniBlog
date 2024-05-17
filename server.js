@@ -141,7 +141,7 @@ app.post('/register', (req, res) => {
     registerUser(req, res);
 });
 app.post('/login', (req, res) => {
-    // TODO: Login a user
+    loginUser(req, res);
 });
 app.get('/logout', (req, res) => {
     // TODO: Logout the user
@@ -189,10 +189,11 @@ function findUserById(userId) {
 }
 
 // Function to add a new user
-function addUser(username) {
+function addUser(username, password) {
     let user = {
         id: users.length,
         username: username,
+        // password: password,
         avatar_url: undefined,
         memberSince: new Date()
     };
@@ -212,6 +213,7 @@ function isAuthenticated(req, res, next) {
 // Function to register a user
 function registerUser(req, res) {
     const username = req.body.username;
+    //const password = req.body.password;
     console.log("Attempting to register:", username);
     if (findUserByUsername(username) !== undefined) {
         // username already exists
@@ -226,7 +228,19 @@ function registerUser(req, res) {
 
 // Function to login a user
 function loginUser(req, res) {
-    // TODO: Login a user and redirect appropriately
+    const username = req.body.username;
+    const user = findUserByUsername(username);
+
+    if (user) {
+        // Successful login
+        console.log("Logged in:", username);
+        req.session.userId = user.id;
+        req.session.loggedIn = true;
+        res.redirect('/');
+    } else {
+        // Invalid username or password
+        res.redirect('/login?error=Invalid+username+or+password');
+    }
 }
 
 // Function to logout a user

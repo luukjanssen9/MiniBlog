@@ -9,8 +9,11 @@
             <p style="color: red;">{{loginError}}</p>
         {{/if}}
         <form action="/login" method="POST">
-            <!-- the login form goes here -->        
-             <button type="submit">Login</button>
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" required>
+            <label for="password">Password</label>
+            <input type="text" id="password" name="password" required>
+            <button type="submit">Login</button>
         </form>
     </section>
 
@@ -25,6 +28,8 @@
         <form action="/register" method="POST">
             <label for="username">Username</label>
             <input type="text" id="username" name="username" required>
+            <label for="password">Password</label>
+            <input type="text" id="password" name="password" required>
             <button type="submit">Register</button>
         </form>
     </section>
