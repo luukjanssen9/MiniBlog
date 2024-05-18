@@ -144,7 +144,7 @@ app.post('/login', (req, res) => {
     loginUser(req, res);
 });
 app.get('/logout', (req, res) => {
-    // TODO: Logout the user
+    logoutUser(req, res);
 });
 app.post('/delete/:id', isAuthenticated, (req, res) => {
     // TODO: Delete a post if the current user is the owner
@@ -186,6 +186,12 @@ function findUserByUsername(username) {
 // Function to find a user by user ID
 function findUserById(userId) {
     // TODO: Return user object if found, otherwise return undefined
+    for (let i = 0; i < users.length; i++) {
+        if (users[i].id == id) {
+            return users[i];
+        }
+    }
+    return undefined;
 }
 
 // Function to add a new user
@@ -246,6 +252,16 @@ function loginUser(req, res) {
 // Function to logout a user
 function logoutUser(req, res) {
     // TODO: Destroy session and redirect appropriately
+    req.session.destroy(err => {
+        if (err) {
+            console.error("Error destroying session: ", err);
+            res.redirect('/error'); // Redirect to error page
+
+        } else {
+            res.clearCookie('connect.sid'); // Clear the session cookie
+            res.redirect('/'); //Redirect to home page after successful logout
+        }
+    });
 }
 
 // Function to render the profile page
