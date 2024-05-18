@@ -249,11 +249,15 @@ function loginUser(req, res) {
 
 // Function to logout a user
 function logoutUser(req, res) {
-    req.session.destroy(function(err) {
-        if(err) {
-            console.log(err);
+    // TODO: Destroy session and redirect appropriately
+    req.session.destroy(err => {
+        if (err) {
+            console.error("Error destroying session: ", err);
+            res.redirect('/error'); // Redirect to error page
+
         } else {
-            res.redirect('/login');
+            res.clearCookie('connect.sid'); // Clear the session cookie
+            res.redirect('/'); //Redirect to home page after successful logout
         }
     });
 }
