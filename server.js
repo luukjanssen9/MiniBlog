@@ -132,7 +132,7 @@ app.post('/like/:id', (req, res) => {
     // TODO: Update post likes
 });
 app.get('/profile', isAuthenticated, (req, res) => {
-    // TODO: Render profile page
+    renderProfile(req, res);
 });
 app.get('/avatar/:username', (req, res) => {
     // TODO: Serve the avatar image for the user
@@ -174,7 +174,6 @@ let users = [
 
 // Function to find a user by username
 function findUserByUsername(username) {
-    // TODO: Return user object if found, otherwise return undefined
     for (let i = 0; i < users.length; i++) {
         if (users[i].username == username) {
             return users[i];
@@ -185,7 +184,12 @@ function findUserByUsername(username) {
 
 // Function to find a user by user ID
 function findUserById(userId) {
-    // TODO: Return user object if found, otherwise return undefined
+    for (let i = 0; i < users.length; i++) {
+        if (users[i].id == userId) {
+            return users[i];
+        }
+    }
+    return undefined;
 }
 
 // Function to add a new user
@@ -256,7 +260,9 @@ function logoutUser(req, res) {
 
 // Function to render the profile page
 function renderProfile(req, res) {
-    // TODO: Fetch user posts and render the profile page
+    const user = findUserById(req.session.userId);
+    const userPosts = posts.filter(post => post.username === user.username);
+    res.render('profile', { user, posts: userPosts });
 }
 
 // Function to update post likes
