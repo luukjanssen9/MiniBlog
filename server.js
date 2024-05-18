@@ -144,7 +144,7 @@ app.post('/login', (req, res) => {
     loginUser(req, res);
 });
 app.get('/logout', (req, res) => {
-    // TODO: Logout the user
+    logoutUser(req, res);
 });
 app.post('/delete/:id', isAuthenticated, (req, res) => {
     // TODO: Delete a post if the current user is the owner
@@ -245,7 +245,13 @@ function loginUser(req, res) {
 
 // Function to logout a user
 function logoutUser(req, res) {
-    // TODO: Destroy session and redirect appropriately
+    req.session.destroy(function(err) {
+        if(err) {
+            console.log(err);
+        } else {
+            res.redirect('/login');
+        }
+    });
 }
 
 // Function to render the profile page
