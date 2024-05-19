@@ -1,0 +1,78 @@
+/* Section Base Styles */
+.section-container {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    max-width: 800px;
+    margin: auto;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+/* Post Form Styles */
+.section-container .post-form {
+    background-color: #f9f9f9;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.section-container input[type="text"], 
+.section-container textarea {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    box-sizing: border-box;
+}
+
+.section-container .form-actions {
+    text-align: right;
+}
+
+.section-container .button, 
+.section-container .emoji-button, 
+.section-container .post-button {
+    padding: 10px 20px;
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    cursor: pointer;
+    margin-left: 10px;
+}
+
+.section-container .button:hover, 
+.section-container .emoji-button:hover, 
+.section-container .post-button:hover {
+    background-color: #0056b3;
+}
+
+/* Emoji Panel Styles */
+.section-container .emoji-panel {
+    border: 1px solid #ddd;
+    padding: 10px;
+    background-color: white;
+}
+
+.section-container #emoji-grid span {
+    padding: 5px;
+    display: inline-block;
+}
+
+/* Posts List Styles */
+.section-container .posts-list ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.section-container .posts-list ul li {
+    border-bottom: 1px solid #eee;
+    padding: 10px;
+    margin-top: 10px;
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+    .section-container {
+        padding: 10px;
+    }
+}

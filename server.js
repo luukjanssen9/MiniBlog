@@ -2,7 +2,7 @@ const express = require('express');
 const expressHandlebars = require('express-handlebars');
 const session = require('express-session');
 const canvas = require('canvas');
-const path = require('path');
+
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Configuration and Setup
@@ -57,7 +57,7 @@ app.engine(
 );
 
 app.set('view engine', 'handlebars');
-app.set('views', path.join(__dirname, 'views'));
+app.set('views',  'views');
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Middleware
@@ -84,7 +84,7 @@ app.use((req, res, next) => {
     next();
 });
 
-app.use(express.static(path.join(__dirname, 'public')));                 // Serve static files
+app.use(express.static('public'));                 // Serve static files
 app.use(express.urlencoded({ extended: true }));    // Parse URL-encoded bodies (as sent by HTML forms)
 app.use(express.json());                            // Parse JSON bodies (as sent by API clients)
 
@@ -111,7 +111,9 @@ app.get('/register', (req, res) => {
 // Login route GET route is used for error response from login
 //
 app.get('/login', (req, res) => {
-    res.render('loginRegister', { loginError: req.query.error });
+    res.render('loginRegister', { 
+        loginError: req.query.error,
+        });
 });
 
 // Error route: render error page

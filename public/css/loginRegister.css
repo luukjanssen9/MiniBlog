@@ -1,3 +1,12 @@
+/* Container to center .login-register */
+.login-register-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh; /* Full viewport height */
+    background-color: #f0f0f0; /* Light background color */
+}
+
 .login-register {
     display: flex;
     align-items: center;
@@ -16,28 +25,28 @@
     background-color: #f9f9f9;
 }
 
-h2 {
+.login-register h2 {
     margin-top: 0;
     color: #333;
 }
 
-form {
+.login-register form {
     display: flex;
     flex-direction: column;
 }
 
-label {
+.login-register label {
     margin-top: 10px;
 }
 
-input {
+.login-register input {
     padding: 8px;
     margin-top: 5px;
     border: 1px solid #ddd;
     border-radius: 5px;
 }
 
-button {
+.login-register button {
     padding: 10px;
     margin-top: 20px;
     border: none;
@@ -47,11 +56,11 @@ button {
     cursor: pointer;
 }
 
-button:hover {
+.login-register button:hover {
     background-color: #0056b3;
 }
 
-.or-divider {
+.login-register .or-divider {
     text-align: center;
     padding: 0 20px;
     color: #777;

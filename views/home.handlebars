@@ -1,6 +1,4 @@
-{{#*inline "cssLink"}}
 <link rel="stylesheet" href="/css/home.css">
-{{/inline}}
 
 {{! Use the main layout }}
 {{!< main }}
@@ -89,7 +87,7 @@ function searchEmojis() {
     // array.filter takes a predicate
     // use string.includes. 
 
-    const filteredEmojis = allEmojis.filter(...);
+    const filteredEmojis = allEmojis.filter();
     
     displayEmojis(filteredEmojis);
 }
