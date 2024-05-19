@@ -121,21 +121,21 @@ app.get('/error', (req, res) => {
 
 // Additional routes that you must implement
 
-
 app.get('/post/:id', (req, res) => {
     // TODO: Render post detail page
 });
 app.post('/posts', (req, res) => {
     // TODO: Add a new post and redirect to home
+    addPost(req.body.title, req.body.content, findUserById(req.session.userId));
 });
 app.post('/like/:id', (req, res) => {
-    // TODO: Update post likes
+    updatePostLikes(req, res);
 });
 app.get('/profile', isAuthenticated, (req, res) => {
     renderProfile(req, res);
 });
 app.get('/avatar/:username', (req, res) => {
-    // TODO: Serve the avatar image for the user
+    handleAvatar(req, res);
 });
 app.post('/register', (req, res) => {
     registerUser(req, res);
@@ -270,13 +270,33 @@ function renderProfile(req, res) {
 }
 
 // Function to update post likes
-function updatePostLikes(req, res) {
-    // TODO: Increment post likes if conditions are met
+function updatePostLikes(req, res) { 
+    //  get post from request params
+    const postId = parseInt(req.params.id);
+    const post = posts.find(post => post.id === postId);
+    //  increment likes
+    if (post) {
+        post.likes += 1;
+    }
+    res.redirect(`/post/${postId}`);t
 }
 
 // Function to handle avatar generation and serving
 function handleAvatar(req, res) {
-    // TODO: Generate and serve the user's avatar image
+    //  get username from request params
+    const username = req.params.username;
+    const user = findUserByUsername(username);
+
+    if (user) {
+        //  generate avatar and send to client
+        const avatar = generateAvatar(username[0]);
+        res.contentType('image/png');
+        res.send(avatar);
+         // update user avatar_url
+         user.avatar_url = `/avatar/${username}`;
+    } else {
+        res.status(404).send('User not found');
+    }
 }
 
 // Function to get the current user from session
@@ -291,16 +311,41 @@ function getPosts() {
 
 // Function to add a new post
 function addPost(title, content, user) {
-    // TODO: Create a new post object and add to posts array
+    // make new post object
+    let post = {
+        id: posts.length + 1,
+        title: title,
+        content: content,
+        username: user.username,
+        timestamp: new Date().toISOString(),
+        likes: 0
+    };
+    //  add to post array
+    posts.push(post);
+    console.log("Pushed post", title, ": ", content, "to post array by", user.username);
 }
 
 // Function to generate an image avatar
 function generateAvatar(letter, width = 100, height = 100) {
-    // TODO: Generate an avatar image with a letter
-    // Steps:
-    // 1. Choose a color scheme based on the letter
-    // 2. Create a canvas with the specified width and height
-    // 3. Draw the background color
-    // 4. Draw the letter in the center
-    // 5. Return the avatar as a PNG buffer
+    //  initialize
+    const canvas = canvas.createCanvas(width, height);
+    const context = canvas.getContext('2d');
+
+    // choose color scheme from letter
+    const backgroundColor = '#'+(Math.random()*0xFFFFFF<<0).toString(16);
+    const textColor = '#'+(Math.random()*0xFFFFFF<<0).toString(16);
+
+    // draw background color
+    context.fillStyle = backgroundColor;
+    context.fillRect(0, 0, width, height);
+
+    // draw letter in the center
+    context.fillStyle = textColor;
+    context.font = 'bold 50px sans-serif';
+    context.textAlign = 'center';
+    context.textBaseline = 'middle';
+    context.fillText(letter.toUpperCase(), width / 2, height / 2);
+
+    // return avatar as PNG buffer
+    return canvas.toBuffer();
 }
