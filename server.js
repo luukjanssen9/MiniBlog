@@ -129,6 +129,7 @@ app.get('/post/:id', (req, res) => {
 app.post('/posts', (req, res) => {
     // TODO: Add a new post and redirect to home
     addPost(req.body.title, req.body.content, findUserById(req.session.userId));
+    res.redirect('/');
 });
 app.post('/like/:id', (req, res) => {
     updatePostLikes(req, res);
@@ -166,13 +167,14 @@ app.listen(PORT, () => {
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 // Example data for posts and users
-let posts = [
-    { id: 1, title: 'Sample Post', content: 'This is a sample post.', username: 'SampleUser', timestamp: '2024-01-01 10:00', likes: 0 },
-    { id: 2, title: 'Another Post', content: 'This is another sample post.', username: 'AnotherUser', timestamp: '2024-01-02 12:00', likes: 0 },
-];
+
 let users = [
     { id: 1, username: 'SampleUser', avatar_url: undefined, memberSince: '2024-01-01 08:00' },
     { id: 2, username: 'AnotherUser', avatar_url: undefined, memberSince: '2024-01-02 09:00' },
+];
+let posts = [
+    { id: 1, title: 'Sample Post', content: 'This is a sample post.', user: users[0], timestamp: '2024-01-01 10:00', likes: 0 },
+    { id: 2, title: 'Another Post', content: 'This is another sample post.', user: users[1], timestamp: '2024-01-02 12:00', likes: 0 },
 ];
 
 // Function to find a user by username
@@ -322,19 +324,19 @@ function getPosts() {
 }
 
 // Function to add a new post
-function addPost(title, content, user) {
+function addPost(title, content, poster) {
     // make new post object
     let post = {
         id: posts.length + 1,
         title: title,
         content: content,
-        username: user.username,
+        user: poster,
         timestamp: new Date().toISOString(),
         likes: 0
     };
     //  add to post array
     posts.push(post);
-    console.log("Pushed post", title, ": ", content, "to post array by", user.username);
+    console.log("Pushed post", title, ": ", content, "to post array by", poster.username);
 }
 
 // Function to generate an image avatar

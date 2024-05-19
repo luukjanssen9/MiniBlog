@@ -11,6 +11,7 @@
         <!-- show the create post form when logged in -->
         <section class="post-form">
             <!-- make a header here -->
+            <h1>Write a {{postNeoType}}!</h1>
             <form action="/posts" method="POST">
                 <input type="text" name="title" placeholder="Title" required>
                 <textarea name="content" placeholder="Content" required></textarea>
@@ -40,6 +41,7 @@
         </ul>
         {{else}}
             <!-- no posts, oh no, what now? -->
+            <h2>Be the first to your {{postNeoType}} with the world!</h2>
         {{/if}}
     </section>
 </section>
