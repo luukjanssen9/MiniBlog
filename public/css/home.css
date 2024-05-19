@@ -1,37 +1,45 @@
 /* Section Base Styles */
-.section-container {
+.content-container {
     font-family: Arial, sans-serif;
     background-color: #f4f4f4;
-    max-width: 800px;
+    max-width: 1500px; /* Increase the max-width to accommodate side-by-side layout */
     margin: auto;
     padding: 20px;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    display: flex; /* Use flexbox for the layout */
+    gap: 20px; /* Add space between the two sections */
 }
 
 /* Post Form Styles */
-.section-container .post-form {
+.content-container .post-form {
     background-color: #f9f9f9;
     padding: 20px;
-    margin-bottom: 20px;
+    width: 40%; /* Set the width of the post form */
+    box-shadow: 0 0 5px rgba(0,0,0,0.1); /* Optional: Add a shadow to the form */
+    height: 400px;
+    margin-top: 20px;
+    
 }
 
-.section-container input[type="text"], 
-.section-container textarea {
+.content-container textarea {
+    height: 220px;
+}
+.content-container input[type="text"], 
+.content-container textarea {
     width: 100%;
     padding: 10px;
-    margin-top: 5px;
-    margin-bottom: 10px;
+    margin: 10px;
     border: 1px solid #ddd;
     box-sizing: border-box;
 }
 
-.section-container .form-actions {
+.content-container .form-actions {
     text-align: right;
 }
 
-.section-container .button, 
-.section-container .emoji-button, 
-.section-container .post-button {
+.content-container .button, 
+.content-container .emoji-button, 
+.content-container .post-button {
     padding: 10px 20px;
     background-color: #007BFF;
     color: white;
@@ -40,39 +48,55 @@
     margin-left: 10px;
 }
 
-.section-container .button:hover, 
-.section-container .emoji-button:hover, 
-.section-container .post-button:hover {
+.content-container .button:hover, 
+.content-container .emoji-button:hover, 
+.content-container .post-button:hover {
     background-color: #0056b3;
 }
 
 /* Emoji Panel Styles */
-.section-container .emoji-panel {
+.content-container .emoji-panel {
     border: 1px solid #ddd;
     padding: 10px;
     background-color: white;
 }
 
-.section-container #emoji-grid span {
+.content-container #emoji-grid span {
     padding: 5px;
     display: inline-block;
 }
 
 /* Posts List Styles */
-.section-container .posts-list ul {
-    list-style-type: none;
-    padding: 0;
+.content-container .posts-list {
+    width: 60%; /* Set the width of the posts list */
+    
 }
 
-.section-container .posts-list ul li {
-    border-bottom: 1px solid #eee;
+.content-container .posts-list ul {
+    list-style-type: none;
     padding: 10px;
-    margin-top: 10px;
+    margin: 10px;
+    
+    
+}
+
+.content-container .posts-list .post {
+    background-color: white;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    padding: 10px
+    
 }
 
 /* Responsive Design */
 @media (max-width: 600px) {
-    .section-container {
+    .content-container {
+        flex-direction: column; /* Stack the sections vertically on small screens */
         padding: 10px;
+    }
+
+    .content-container .post-form,
+    .content-container .posts-list {
+        width: 90%; /* Make both sections full width on small screens */
     }
 }
