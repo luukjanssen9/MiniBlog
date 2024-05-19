@@ -80,6 +80,7 @@ app.use((req, res, next) => {
     res.locals.postNeoType = 'Post';
     res.locals.loggedIn = req.session.loggedIn || false;
     res.locals.userId = req.session.userId || '';
+    res.locals.user = req.session.user || {};
     next();
 });
 
@@ -135,6 +136,7 @@ app.get('/profile', isAuthenticated, (req, res) => {
     renderProfile(req, res);
 });
 app.get('/avatar/:username', (req, res) => {
+    console.log("hereee");
     handleAvatar(req, res);
 });
 app.post('/register', (req, res) => {
@@ -240,7 +242,15 @@ function loginUser(req, res) {
         console.log("Logged in:", username);
         req.session.userId = user.id;
         req.session.loggedIn = true;
-        res.redirect('/');
+        req.session.user = user;
+        req.session.save(err => {
+            if (err) {
+                // handle error
+                console.log(err);
+            } else {
+                res.redirect('/');
+            }
+        });;
     } else {
         // Invalid username or password
         res.redirect('/login?error=Invalid+username+or+password');
@@ -286,14 +296,15 @@ function handleAvatar(req, res) {
     //  get username from request params
     const username = req.params.username;
     const user = findUserByUsername(username);
+    console.log("Working on avatar for ", username);
 
     if (user) {
         //  generate avatar and send to client
         const avatar = generateAvatar(username[0]);
         res.contentType('image/png');
         res.send(avatar);
-         // update user avatar_url
-         user.avatar_url = `/avatar/${username}`;
+        // update user avatar_url
+        user.avatar_url = `/avatar/${username}`;
     } else {
         res.status(404).send('User not found');
     }
@@ -327,9 +338,9 @@ function addPost(title, content, user) {
 
 // Function to generate an image avatar
 function generateAvatar(letter, width = 100, height = 100) {
-    //  initialize
-    const canvas = canvas.createCanvas(width, height);
-    const context = canvas.getContext('2d');
+    //  initialize canvas
+    const avatarCanvas = canvas.createCanvas(width, height);
+    const context = avatarCanvas.getContext('2d');
 
     // choose color scheme from letter
     const backgroundColor = '#'+(Math.random()*0xFFFFFF<<0).toString(16);
@@ -347,5 +358,5 @@ function generateAvatar(letter, width = 100, height = 100) {
     context.fillText(letter.toUpperCase(), width / 2, height / 2);
 
     // return avatar as PNG buffer
-    return canvas.toBuffer();
+    return avatarCanvas.toBuffer();
 }
