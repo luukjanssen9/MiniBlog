@@ -1,32 +1,37 @@
+{{#*inline "cssLink"}}
+<link rel="stylesheet" href="/css/loginRegister.css">
+{{/inline}}
+
 {{! Use the main layout }}
 {{!< main }}
+<div class="login-register-container">
+    <section class="login-register">
+        <section class="login-area">
+            <h2>Login</h2>
+            <!-- errors will appear here -->
+            {{#if loginError}}
+                <p style="color: red;">{{loginError}}</p>
+            {{/if}}
+            <form action="/login" method="POST">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" required>
+                <button type="submit">Login</button>
+            </form>
+        </section>
 
-<section class="login-register">
-    <section class = "login-area">
-        <h2>Login</h2>
-        <!-- errors will appear here -->
-        {{#if loginError}}
-            <p style="color: red;">{{loginError}}</p>
-        {{/if}}
-        <form action="/login" method="POST">
-            <label for="username">Username</label>
-            <input type="text" id="username" name="username" required>
-            <button type="submit">Login</button>
-        </form>
+        <div class="or-divider">-- OR --</div>
+
+        <section class="register-area">
+            <h2>Register</h2>
+            <!-- errors will appear here -->
+            {{#if regError}}
+                <p style="color: red;">{{regError}}</p>
+            {{/if}}
+            <form action="/register" method="POST">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" required>
+                <button type="submit">Register</button>
+            </form>
+        </section>
     </section>
-
-    <!-- say --OR-- ... with style -->
-
-    <section class = "register-area">
-        <h2>Register</h2>
-        <!-- errors will appear here -->
-        {{#if regError}}
-            <p style="color: red;">{{regError}}</p>
-        {{/if}}
-        <form action="/register" method="POST">
-            <label for="username">Username</label>
-            <input type="text" id="username" name="username" required>
-            <button type="submit">Register</button>
-        </form>
-    </section>
-</section>
+</div>

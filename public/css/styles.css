@@ -59,3 +59,71 @@ nav {
     display: flex;
     align-items: center;
 }
+
+/* Container to center .login-register */
+.login-register-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh; /* Full viewport height */
+    background-color: #f0f0f0; /* Light background color */
+}
+
+.login-register {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 60%;
+    background-color: #fff;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+}
+
+.login-area, .register-area {
+    width: 45%;
+    padding: 20px;
+    box-sizing: border-box;
+    background-color: #f9f9f9;
+}
+
+.login-register h2 {
+    margin-top: 0;
+    color: #333;
+}
+
+.login-register form {
+    display: flex;
+    flex-direction: column;
+}
+
+.login-register label {
+    margin-top: 10px;
+}
+
+.login-register input {
+    padding: 8px;
+    margin-top: 5px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.login-register button {
+    padding: 10px;
+    margin-top: 20px;
+    border: none;
+    border-radius: 5px;
+    background-color: #007BFF;
+    color: #fff;
+    cursor: pointer;
+}
+
+.login-register button:hover {
+    background-color: #0056b3;
+}
+
+.login-register .or-divider {
+    text-align: center;
+    padding: 0 20px;
+    color: #777;
+}
