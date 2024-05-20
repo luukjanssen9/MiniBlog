@@ -2,6 +2,8 @@ const express = require('express');
 const expressHandlebars = require('express-handlebars');
 const session = require('express-session');
 const canvas = require('canvas');
+const fs = require('fs');
+const path = require('path');
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -99,7 +101,10 @@ app.use(express.json());                            // Parse JSON bodies (as sen
 //
 app.get('/', (req, res) => {
     const posts = getPosts();
-    const user = getCurrentUser(req) || {};
+    const user = getCurrentUser(req);
+    if (!user) {
+        console.log("user not found");
+    }
     res.render('home', { posts, user });
 });
 
@@ -140,7 +145,6 @@ app.get('/profile', isAuthenticated, (req, res) => {
     renderProfile(req, res);
 });
 app.get('/avatar/:username', (req, res) => {
-    console.log("hereee");
     handleAvatar(req, res);
 });
 app.post('/register', (req, res) => {
@@ -255,7 +259,7 @@ function loginUser(req, res) {
             } else {
                 res.redirect('/');
             }
-        });;
+        });
     } else {
         // Invalid username or password
         res.redirect('/login?error=Invalid+username+or+password');
@@ -279,8 +283,9 @@ function logoutUser(req, res) {
 
 // Function to render the profile page
 function renderProfile(req, res) {
-    const user = findUserById(req.session.userId);
-    const userPosts = posts.filter(post => post.username === user.username);
+    const user = req.session.user;
+    const userPosts = posts.filter(post => post.user.username === user.username);
+    console.log("Post length = ", userPosts.length);
     res.render('profile', { user, posts: userPosts });
 }
 
@@ -301,15 +306,26 @@ function handleAvatar(req, res) {
     //  get username from request params
     const username = req.params.username;
     const user = findUserByUsername(username);
-    console.log("Working on avatar for ", username);
+    console.log("Generating avatar for ", username);
 
     if (user) {
         //  generate avatar and send to client
         const avatar = generateAvatar(username[0]);
         res.contentType('image/png');
         res.send(avatar);
+
+        // Save the avatar as a PNG file
+        const avatarPath = path.join(__dirname, 'public', 'images', `${username}.png`);
+        fs.writeFile(avatarPath, avatar, (err) => {
+            if (err) {
+                console.error('Error saving avatar:', err);
+            } else {
+                console.log('Avatar saved at', avatarPath);
+            }
+        });
         // update user avatar_url
-        user.avatar_url = `/avatar/${username}`;
+        user.avatar_url = `/images/${username}.png`;
+
     } else {
         res.status(404).send('User not found');
     }
@@ -317,7 +333,15 @@ function handleAvatar(req, res) {
 
 // Function to get the current user from session
 function getCurrentUser(req) {
-    // TODO: Return the user object if the session user ID matches
+    // Check if the session has a user ID
+    if (req.session.userId) {
+        // Find the user with the matching ID
+        const user = findUserById(req.session.userId);
+        // Return the user object
+        return user;
+    }
+    // If the session does not have a user ID, return undefined
+    return undefined;
 }
 
 // Function to get all posts, sorted by latest first

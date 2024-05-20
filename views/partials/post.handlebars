@@ -11,6 +11,7 @@
         <div class="post-status-bar">
             <!-- everything that is shown in the status bar -->
             <button class="like-button" data-id="{{this.id}}" onclick="handleLikeClick(event)">♥</button>
+            <p>{{this.likes}}</p>
             {{#ifCond this.user.username ../user.username}}
                 <button class="delete-button" data-id="{{this.id}}" onclick="handleDeleteClick(event)"><i class="fas fa-trash-alt"></i></button>
             {{/ifCond}}
