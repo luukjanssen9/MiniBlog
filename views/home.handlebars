@@ -34,7 +34,7 @@
         <ul>
             {{#each posts}}
                 <!-- you have to pass the user in to posts and this is the syntax -->
-                {{> post this user=currUser poster=this.poster}}            
+                {{> post this user=../user }}            
             {{/each}}
         </ul>
         {{else}}

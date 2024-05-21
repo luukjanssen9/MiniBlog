@@ -104,7 +104,7 @@ app.get('/', (req, res) => {
     const allPosts = getPosts();
     const user = req.session.user;
     
-    console.log("Posts length", posts.length, posts[0].user.username, posts[1].user.username);
+    console.log("Posts length", posts.length, posts[0].username, posts[1].username);
     res.render('home', { posts: allPosts, user });
 });
 
@@ -152,11 +152,13 @@ app.get('/post/:id', (req, res) => {
     // Render the post detail page with the post
     res.render('partials/post', { post });
 });
+//  make a post
 app.post('/posts', (req, res) => {
     console.log("get /posts");
-    addPost(req.body.title, req.body.content, findUserById(req.session.userId));
+    addPost(req.body.title, req.body.content, req.session.user.username);
     res.redirect('/');
 });
+//  like a post
 app.post('/like/:id', (req, res) => {
     console.log("get /like", req.params.id);
     updatePostLikes(req, res);
@@ -201,12 +203,12 @@ app.listen(PORT, () => {
 // Example data for posts and users
 
 let users = [
-    { id: 0, username: 'SampleUser', avatar_url: undefined, memberSince: '2024-01-01 08:00' },
-    { id: 1, username: 'AnotherUser', avatar_url: undefined, memberSince: '2024-01-02 09:00' },
+    { id: 0, username: 'u1', avatarUrl: undefined, memberSince: '2024-01-01 08:00' },
+    { id: 1, username: 'AnotherUser', avatarUrl: undefined, memberSince: '2024-01-02 09:00' },
 ];
 let posts = [
-    { id: 0, title: 'Sample Post', content: 'This is a sample post.', user: users[0], timestamp: '2024-01-01 10:00', likes: [] },
-    { id: 1, title: 'Another Post', content: 'This is another sample post.', user: users[1], timestamp: '2024-01-02 12:00', likes: [] },
+    { id: 0, title: 'Sample Post', content: 'This is a sample post.', username: users[0].username, avatarUrl: `/avatar/${users[0].username}`, timestamp: '2024-01-01 10:00', likes: [] },
+    { id: 1, title: 'Another Post', content: 'This is another sample post.', username: users[1].username, avatarUrl: `/avatar/${users[1].username}`, timestamp: '2024-01-02 12:00', likes: [] },
 ];
 
 // Function to find a user by username
@@ -238,7 +240,7 @@ function addUser(username, password) {
         id: users.length,
         username: username,
         // password: password,
-        avatar_url: undefined,
+        avatarUrl: `/avatar/${username}`,
         memberSince: new Date()
     };
     users.push(user);
@@ -291,23 +293,29 @@ function loginUser(req, res) {
 // Function to logout a user
 function logoutUser(req, res) {
     console.log("logoutUser, ", req.session.user.username);
-    req.session.destroy(err => {
-        if (err) {
-            console.error("Error destroying session: ", err);
-            res.redirect('/error'); // Redirect to error page
+    // req.session.destroy(err => {
+    //     if (err) {
+    //         console.error("Error destroying session: ", err);
+    //         res.redirect('/error'); // Redirect to error page
 
-        } else {
-            res.clearCookie('connect.sid'); // Clear the session cookie
-            res.redirect('/'); //Redirect to home page after successful logout
-        }
-    });
+    //     } else {
+    //         res.clearCookie('connect.sid'); // Clear the session cookie
+    //         res.redirect('/'); //Redirect to home page after successful logout
+    //     }
+    // });
+    req.session.loggedId = false;
+    req.session.user = {};
+    req.session.userId = '';
+    res.clearCookie('connect.sid');
+    res.redirect('/');
+
 }
 
 // Function to render the profile page
 function renderProfile(req, res) {
     console.log("renderProfile, ", req.session.user.username);
     const user = req.session.user;
-    const userPosts = posts.filter(post => post.user.username === user.username);
+    const userPosts = posts.filter(post => post.username === user.username);
     res.render('profile', { user, posts: userPosts });
 }
 
@@ -350,8 +358,11 @@ async function handleAvatar(req, res) {
         try {
             await fs.promises.writeFile(avatarPath, avatar);
             console.log('Avatar saved at', avatarPath);
-            // update user avatar_url
-            user.avatar_url = `/images/${username}.png`;
+            // update avatarUrl
+            user.avatarUrl = avatarPath;
+            posts.filter( post => post.username === user.username ).forEach(post => {
+                post.avatarUrl = avatarPath;
+            })
         } catch (err) {
             console.error('Error saving avatar:', err);
         }
@@ -368,14 +379,14 @@ function getPosts() {
 }
 
 // Function to add a new post
-function addPost(title, content, poster) {
-    console.log("addPost, ", title, ", ", content, ", ", poster);
+function addPost(title, content, user) {
+    console.log("addPost, ", title, ", ", content, ", ", user);
     // make new post object
     let post = {
         id: posts.length + 1,
         title: title,
         content: content,
-        user: poster,
+        username: user,
         timestamp: new Date().toISOString(),
         likes: 0
     };
