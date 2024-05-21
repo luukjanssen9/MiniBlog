@@ -320,24 +320,24 @@ function renderProfile(req, res) {
 }
 
 // Function to update post likes
-function updatePostLikes(req, res) { 
+function updatePostLikes(req, res) {
     console.log("updatePostLikes, ", req.session.user.username, " liking ", posts.find(post => post.id === parseInt(req.params.id)).user.username, "'s post");
-    //  get post from request params
+    // get post request from params
     const postId = parseInt(req.params.id);
     const post = posts.find(post => post.id === postId);
-    //  increment / decrement likes
-    if (req.session.loggedIn && !post.likes.includes(req.session.user.useriD)) {
-        post.likes.push(req.session.user.useriD);
-    } else if (req.session.loggedIn) {  //  if logged in and already liked, remove like
+    // inc / dec likes
+    if (req.session.loggedIn && !post.likes.includes(req.session.user.id)) {
+        post.likes.push(req.session.user.id);
+    } else if (req.session.loggedIn) {
         post.likes = post.likes.filter(userId => userId !== req.session.user.id);
     } else {
-        // res.status(401).json({ error: "Must be logged in to like" });
-        // res.status(401).json({ error: 'Must be logged in to like' });
-        console.log("Must be logged in to like")
+        console.log("Must be logged in to like");
         return;
     }
-    res.json(posts.find(post => post.id === Number(req.params.id)));
+    
+    res.json(posts.find(post => post.id === postId));
 }
+
 
 // Function to handle avatar generation and serving
 async function handleAvatar(req, res) {
