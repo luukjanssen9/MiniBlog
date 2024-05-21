@@ -107,7 +107,6 @@ app.get('/', (req, res) => {
     const allPosts = getPosts();
     const user = req.session.user;
     
-    console.log("Posts length", posts.length, posts[0].username, posts[1].username);
     res.render('home', { posts: allPosts, user });
 });
 
@@ -186,9 +185,16 @@ app.get('/logout', (req, res) => {
     console.log("post /logout");
     logoutUser(req, res);
 });
-app.post('/delete/:id', isAuthenticated, (req, res) => {
-    // TODO: Delete a post if the current user is the owner
+app.delete('/delete/:id', isAuthenticated, (req, res) => {
     console.log("post /delete", req.params.id);
+    len1 = posts.length;
+    posts = posts.filter(post => post.id !== Number(req.params.id));
+    len2 = posts.length;
+    if (len1 == len2) {
+        res.status(400).end();
+    } else {
+        res.status(200).end();
+    }
 });
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
