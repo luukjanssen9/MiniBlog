@@ -1,3 +1,7 @@
 node_modules/
+<<<<<<< Updated upstream
 package-lock.json
 public/images/*
+=======
+package-lock.json
+>>>>>>> Stashed changes
