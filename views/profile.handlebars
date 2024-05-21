@@ -4,11 +4,18 @@
 
 <div class="profile-container">
     <div class="profile-avatar">
-        <img src="{{user.avatar_url}}" alt="User avatar">
+        <!-- conditional rendering based on variables -->
+        <img src="{{#if user.avatar_url}}
+                        {{user.avatar_url}}
+                    {{else}}
+                        /avatar/{{user.username}}
+                    {{/if}}" 
+                    alt="User Avatar" 
+                    class="header-avatar">
     </div>
     
     <section class="profile-info">
-        <h1>{{username}}</h1>
+        <h1>{{user.username}}</h1>
         <p>Member since: {{user.memberSince}}</p>
     </section>
 </div>
@@ -20,7 +27,7 @@
     {{#if posts.length}}
         <ul>
             {{#each posts}}
-                {{> post this}}
+                {{> post this user=currUser poster=this.user}}
             {{/each}}
         </ul>
     {{else}}
