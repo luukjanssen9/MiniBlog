@@ -84,12 +84,15 @@ app.use((req, res, next) => {
     res.locals.loggedIn = req.session.loggedIn || false;
     res.locals.userId = req.session.userId || '';
     res.locals.user = req.session.user || {};
+    res.set('Cache-Control', 'no-store');
     next();
 });
 
 app.use(express.static('public'));                 // Serve static files
 app.use(express.urlencoded({ extended: true }));    // Parse URL-encoded bodies (as sent by HTML forms)
 app.use(express.json());                            // Parse JSON bodies (as sent by API clients)
+
+
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Routes
@@ -236,14 +239,24 @@ function findUserById(userId) {
 // Function to add a new user
 function addUser(username, password) {
     console.log("addUser, ", username);
-    let user = {
+    const avatar = generateAvatar(username[0]);
+    const avatarPath = path.join(__dirname, 'public', 'images', `${username}.png`);
+    const user = {
         id: users.length,
         username: username,
-        // password: password,
-        avatarUrl: `/avatar/${username}`,
+        avatarUrl: `/images/${username}.png`,
         memberSince: new Date()
     };
-    users.push(user);
+    
+    // Save the avatar to the file system
+    fs.promises.writeFile(avatarPath, avatar)
+        .then(() => {
+            console.log('Avatar saved at', avatarPath);
+            users.push(user);
+        })
+        .catch(err => {
+            console.error('Error saving avatar:', err);
+        });
 }
 
 // Middleware to check if user is authenticated
@@ -321,56 +334,43 @@ function renderProfile(req, res) {
 
 // Function to update post likes
 function updatePostLikes(req, res) {
-    console.log("updatePostLikes, ", req.session.user.username, " liking ", posts.find(post => post.id === parseInt(req.params.id)).user.username, "'s post");
-    // get post request from params
     const postId = parseInt(req.params.id);
     const post = posts.find(post => post.id === postId);
-    // inc / dec likes
-    if (req.session.loggedIn && !post.likes.includes(req.session.user.id)) {
-        post.likes.push(req.session.user.id);
-    } else if (req.session.loggedIn) {
-        post.likes = post.likes.filter(userId => userId !== req.session.user.id);
+
+    if (req.session.loggedIn) {
+        if (!post.likes.includes(req.session.user.id)) {
+            post.likes.push(req.session.user.id);
+        } else {
+            post.likes = post.likes.filter(userId => userId !== req.session.user.id);
+        }
+        res.json({ success: true, likes: post.likes });
     } else {
-        console.log("Must be logged in to like");
-        return;
+        res.json({ success: false, message: 'Not logged in' });
     }
-    
-    res.json(posts.find(post => post.id === postId));
 }
+
 
 
 // Function to handle avatar generation and serving
 async function handleAvatar(req, res) {
     console.log("handleAvatar, ", req.params.username);
-    //  get username from request params
     const username = req.params.username;
     const user = findUserByUsername(username);
-    console.log("Generating avatar for ", username);
 
     if (user) {
-        //  generate avatar and send to client
-        const avatar = generateAvatar(username[0]);
-        res.contentType('image/png');
-        res.send(avatar);
-
-        // Save the avatar as a PNG file
         const avatarPath = path.join(__dirname, 'public', 'images', `${username}.png`);
-        try {
-            await fs.promises.writeFile(avatarPath, avatar);
-            console.log('Avatar saved at', avatarPath);
-            // update avatarUrl
-            user.avatarUrl = avatarPath;
-            posts.filter( post => post.username === user.username ).forEach(post => {
-                post.avatarUrl = avatarPath;
-            })
-        } catch (err) {
-            console.error('Error saving avatar:', err);
+        if (fs.existsSync(avatarPath)) {
+            res.sendFile(avatarPath);
+        } else {
+            res.status(404).send('Avatar not found');
         }
-
     } else {
-        res.status(404).send('User not found b');
+        res.status(404).send('User not found');
     }
 }
+
+
+
 
 // Function to get all posts, sorted by latest first
 function getPosts() {
@@ -379,43 +379,40 @@ function getPosts() {
 }
 
 // Function to add a new post
-function addPost(title, content, user) {
-    console.log("addPost, ", title, ", ", content, ", ", user);
-    // make new post object
-    let post = {
-        id: posts.length + 1,
+function addPost(title, content, username) {
+    console.log("addPost, ", title, ", content, ", username);
+    const user = findUserByUsername(username);
+    const post = {
+        id: posts.length,
         title: title,
         content: content,
-        username: user,
+        username: username,
+        avatarUrl: user.avatarUrl,
         timestamp: new Date().toISOString(),
-        likes: 0
+        likes: []
     };
-    //  add to post array
     posts.push(post);
 }
+
+
 
 // Function to generate an image avatar
 function generateAvatar(letter, width = 100, height = 100) {
     console.log("generateAvatar, ");
-    //  initialize canvas
     const avatarCanvas = canvas.createCanvas(width, height);
     const context = avatarCanvas.getContext('2d');
 
-    // choose color scheme from letter
-    const backgroundColor = '#'+(Math.random()*0xFFFFFF<<0).toString(16);
-    const textColor = '#'+(Math.random()*0xFFFFFF<<0).toString(16);
+    const backgroundColor = '#' + (Math.random() * 0xFFFFFF << 0).toString(16).padStart(6, '0');
+    const textColor = '#' + (Math.random() * 0xFFFFFF << 0).toString(16).padStart(6, '0');
 
-    // draw background color
     context.fillStyle = backgroundColor;
     context.fillRect(0, 0, width, height);
 
-    // draw letter in the center
     context.fillStyle = textColor;
     context.font = 'bold 50px sans-serif';
     context.textAlign = 'center';
     context.textBaseline = 'middle';
     context.fillText(letter.toUpperCase(), width / 2, height / 2);
 
-    // return avatar as PNG buffer
     return avatarCanvas.toBuffer();
 }
