@@ -314,10 +314,10 @@ function renderProfile(req, res) {
 // Function to update post likes
 function updatePostLikes(req, res) {
     console.log("updatePostLikes, ", req.session.user.username, " liking ", posts.find(post => post.id === parseInt(req.params.id)).user.username, "'s post");
-    
+    // get post request from params
     const postId = parseInt(req.params.id);
     const post = posts.find(post => post.id === postId);
-
+    // inc / dec likes
     if (req.session.loggedIn && !post.likes.includes(req.session.user.id)) {
         post.likes.push(req.session.user.id);
     } else if (req.session.loggedIn) {
