@@ -83,15 +83,11 @@
     padding: 10px;
     display: flex; /* Use flexbox for the post layout */
     align-items: flex-start; /* Align items at the start */
-    
-    
-}
-
-.content-container .posts-list .post .post-content {
     overflow: hidden; /* or auto, scroll */
     white-space: wrap; 
     text-overflow: ellipsis; /* Adds an ellipsis (...) for overflowing text */
     word-wrap: break-word; /* Ensures long words break and wrap */
+       
 }
 
 .content-container .posts-list .post-avatar {
