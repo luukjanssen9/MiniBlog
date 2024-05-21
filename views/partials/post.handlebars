@@ -2,8 +2,14 @@
 <div class="post">
     <div class="post-avatar">
         <!-- the user's avatar -->
-        <img src="{{this.user.avatar_url}}" alt="{{this.user.username}}'s avatar">
-        <h4>{{this.user.username}}</h4>
+        <img src="{{#if poster.avatar_url}}
+                        {{poster.avatar_url}}
+                    {{else}}
+                        /avatar/{{poster.username}}
+                    {{/if}}" 
+                    alt="{{poster.username}}'s' Avatar" 
+                    class="post-avatar">
+        <h4>{{poster.username}}</h4>
     </div>
     <div class="post-content preserve-newlines">
         <!-- the post -->
@@ -16,7 +22,7 @@
                 <p style="color: red;">{{error}}</p>
             {{/if}}
             <p>{{this.likes.length}}</p>
-            {{#ifCond this.user.username ../user.username}}
+            {{#ifCond poster.username currUser.username}}
                 <button class="delete-button" data-id="{{this.id}}" onclick="handleDeleteClick(event)"><i class="fas fa-trash-alt"></i></button>
             {{/ifCond}}
         </div>        

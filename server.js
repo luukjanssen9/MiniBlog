@@ -100,23 +100,25 @@ app.use(express.json());                            // Parse JSON bodies (as sen
 // template
 //
 app.get('/', (req, res) => {
-    const posts = getPosts();
-    const user = getCurrentUser(req);
-    if (!user) {
-        console.log("user not found a");
-    }
-    res.render('home', { posts, user });
+    console.log("get /");
+    const allPosts = getPosts();
+    const user = req.session.user;
+    
+    console.log("Posts length", posts.length, posts[0].user.username, posts[1].user.username);
+    res.render('home', { posts: allPosts, user });
 });
 
 // Register GET route is used for error response from registration
 //
 app.get('/register', (req, res) => {
+    console.log("get /register");
     res.render('loginRegister', { regError: req.query.error });
 });
 
 // Login route GET route is used for error response from login
 //
 app.get('/login', (req, res) => {
+    console.log("get /login");
     res.render('loginRegister', { 
         loginError: req.query.error,
     });
@@ -131,12 +133,14 @@ app.get('/login', (req, res) => {
 // Error route: render error page
 //
 app.get('/error', (req, res) => {
+    console.log("get /error");
     res.render('error');
 });
 
 // Additional routes that you must implement
 
 app.get('/post/:id', (req, res) => {
+    console.log("get /post", req.params.id);
     // Find the post by ID
     const post = posts.find(post => post.id === Number(req.params.id));
     // If the post was not found, render the error page
@@ -149,30 +153,37 @@ app.get('/post/:id', (req, res) => {
     res.render('partials/post', { post });
 });
 app.post('/posts', (req, res) => {
-    // TODO: Add a new post and redirect to home
+    console.log("get /posts");
     addPost(req.body.title, req.body.content, findUserById(req.session.userId));
     res.redirect('/');
 });
 app.post('/like/:id', (req, res) => {
+    console.log("get /like", req.params.id);
     updatePostLikes(req, res);
 });
 app.get('/profile', isAuthenticated, (req, res) => {
+    console.log("get /profile");
     renderProfile(req, res);
 });
 app.get('/avatar/:username', (req, res) => {
+    console.log("get /avatar/", req.params.username);
     handleAvatar(req, res);
 });
 app.post('/register', (req, res) => {
+    console.log("post /register");
     registerUser(req, res);
 });
 app.post('/login', (req, res) => {
+    console.log("post /login");
     loginUser(req, res);
 });
 app.get('/logout', (req, res) => {
+    console.log("post /logout");
     logoutUser(req, res);
 });
 app.post('/delete/:id', isAuthenticated, (req, res) => {
     // TODO: Delete a post if the current user is the owner
+    console.log("post /delete", req.params.id);
 });
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -190,16 +201,17 @@ app.listen(PORT, () => {
 // Example data for posts and users
 
 let users = [
-    { id: 1, username: 'SampleUser', avatar_url: undefined, memberSince: '2024-01-01 08:00' },
-    { id: 2, username: 'AnotherUser', avatar_url: undefined, memberSince: '2024-01-02 09:00' },
+    { id: 0, username: 'SampleUser', avatar_url: undefined, memberSince: '2024-01-01 08:00' },
+    { id: 1, username: 'AnotherUser', avatar_url: undefined, memberSince: '2024-01-02 09:00' },
 ];
 let posts = [
-    { id: 1, title: 'Sample Post', content: 'This is a sample post.', user: users[0], timestamp: '2024-01-01 10:00', likes: [] },
-    { id: 2, title: 'Another Post', content: 'This is another sample post.', user: users[1], timestamp: '2024-01-02 12:00', likes: [] },
+    { id: 0, title: 'Sample Post', content: 'This is a sample post.', user: users[0], timestamp: '2024-01-01 10:00', likes: [] },
+    { id: 1, title: 'Another Post', content: 'This is another sample post.', user: users[1], timestamp: '2024-01-02 12:00', likes: [] },
 ];
 
 // Function to find a user by username
 function findUserByUsername(username) {
+    console.log("findUserByUsername, ", username);
     for (let i = 0; i < users.length; i++) {
         if (users[i].username == username) {
             return users[i];
@@ -210,8 +222,9 @@ function findUserByUsername(username) {
 
 // Function to find a user by user ID
 function findUserById(userId) {
+    console.log("findUserByID, ", userId);
     for (let i = 0; i < users.length; i++) {
-        if (users[i].id == userId) {
+        if (users[i].id === userId) {
             return users[i];
         }
     }
@@ -220,6 +233,7 @@ function findUserById(userId) {
 
 // Function to add a new user
 function addUser(username, password) {
+    console.log("addUser, ", username);
     let user = {
         id: users.length,
         username: username,
@@ -232,7 +246,7 @@ function addUser(username, password) {
 
 // Middleware to check if user is authenticated
 function isAuthenticated(req, res, next) {
-    console.log(req.session.userId);
+    console.log("isAuthenticated, ", req.session.userId);
     if (req.session.userId) {
         next();
     } else {
@@ -242,9 +256,9 @@ function isAuthenticated(req, res, next) {
 
 // Function to register a user
 function registerUser(req, res) {
+    console.log("registerUser, ", req.body.username);
     const username = req.body.username;
     //const password = req.body.password;
-    console.log("Attempting to register:", username);
     if (findUserByUsername(username) !== undefined) {
         // username already exists
         res.redirect('/register?error=Username+already+exists');
@@ -258,12 +272,12 @@ function registerUser(req, res) {
 
 // Function to login a user
 function loginUser(req, res) {
+    console.log("loginUser, ", req.body.username);
     const username = req.body.username;
     const user = findUserByUsername(username);
 
     if (user) {
         // Successful login
-        console.log("Logged in:", username);
         req.session.userId = user.id;
         req.session.loggedIn = true;
         req.session.user = user;
@@ -276,7 +290,7 @@ function loginUser(req, res) {
 
 // Function to logout a user
 function logoutUser(req, res) {
-    // TODO: Destroy session and redirect appropriately
+    console.log("logoutUser, ", req.session.user.username);
     req.session.destroy(err => {
         if (err) {
             console.error("Error destroying session: ", err);
@@ -291,6 +305,7 @@ function logoutUser(req, res) {
 
 // Function to render the profile page
 function renderProfile(req, res) {
+    console.log("renderProfile, ", req.session.user.username);
     const user = req.session.user;
     const userPosts = posts.filter(post => post.user.username === user.username);
     res.render('profile', { user, posts: userPosts });
@@ -298,6 +313,7 @@ function renderProfile(req, res) {
 
 // Function to update post likes
 function updatePostLikes(req, res) { 
+    console.log("updatePostLikes, ", req.session.user.username, " liking ", posts.find(post => post.id === parseInt(req.params.id)).user.username, "'s post");
     //  get post from request params
     const postId = parseInt(req.params.id);
     const post = posts.find(post => post.id === postId);
@@ -316,7 +332,8 @@ function updatePostLikes(req, res) {
 }
 
 // Function to handle avatar generation and serving
-function handleAvatar(req, res) {
+async function handleAvatar(req, res) {
+    console.log("handleAvatar, ", req.params.username);
     //  get username from request params
     const username = req.params.username;
     const user = findUserByUsername(username);
@@ -330,41 +347,29 @@ function handleAvatar(req, res) {
 
         // Save the avatar as a PNG file
         const avatarPath = path.join(__dirname, 'public', 'images', `${username}.png`);
-        fs.writeFile(avatarPath, avatar, (err) => {
-            if (err) {
-                console.error('Error saving avatar:', err);
-            } else {
-                console.log('Avatar saved at', avatarPath);
-            }
-        });
-        // update user avatar_url
-        user.avatar_url = `/images/${username}.png`;
+        try {
+            await fs.promises.writeFile(avatarPath, avatar);
+            console.log('Avatar saved at', avatarPath);
+            // update user avatar_url
+            user.avatar_url = `/images/${username}.png`;
+        } catch (err) {
+            console.error('Error saving avatar:', err);
+        }
 
     } else {
         res.status(404).send('User not found b');
     }
 }
 
-// Function to get the current user from session
-function getCurrentUser(req) {
-    // Check if the session has a user ID
-    if (req.session.userId) {
-        // Find the user with the matching ID
-        const user = findUserById(req.session.userId);
-        // Return the user object
-        return user;
-    }
-    // If the session does not have a user ID, return undefined
-    return undefined;
-}
-
 // Function to get all posts, sorted by latest first
 function getPosts() {
+    console.log("getPosts");
     return posts.slice().reverse();
 }
 
 // Function to add a new post
 function addPost(title, content, poster) {
+    console.log("addPost, ", title, ", ", content, ", ", poster);
     // make new post object
     let post = {
         id: posts.length + 1,
@@ -376,11 +381,11 @@ function addPost(title, content, poster) {
     };
     //  add to post array
     posts.push(post);
-    console.log("Pushed post", title, ": ", content, "to post array by", poster.username);
 }
 
 // Function to generate an image avatar
 function generateAvatar(letter, width = 100, height = 100) {
+    console.log("generateAvatar, ");
     //  initialize canvas
     const avatarCanvas = canvas.createCanvas(width, height);
     const context = avatarCanvas.getContext('2d');
