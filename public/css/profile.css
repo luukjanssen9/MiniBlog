@@ -1,0 +1,66 @@
+/* Posts List Styles */
+.user-posts {
+    width: 60%; /* Set the width of the posts list */
+}
+
+.user-posts ul {
+    list-style-type: none;
+    padding: 10px;
+    margin: 10px;
+}
+
+.user-posts .post {
+    background-color: white;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    padding: 10px;
+    display: flex; /* Use flexbox for the post layout */
+    align-items: flex-start; /* Align items at the start */
+}
+
+.user-posts .post-avatar {
+    margin-right: 10px; /* Add some space between avatar and content */
+}
+
+.user-posts img {
+    max-height: 60px;
+    border-radius: 10px;
+    margin-right: 20px;
+}
+
+.user-posts h2 {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 40px;
+    margin-top: 8px;
+    margin-bottom: 8px;
+}
+
+.user-posts p {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 25px;
+    
+}
+
+/* Post Status Bar Styles */
+.user-posts .post-status-bar {
+    display: flex; /* Use flexbox for the status bar layout */
+    align-items: center; /* Center items vertically */
+    gap: 10px; /* Add space between the button and paragraph */
+}
+
+.user-posts .like-button {
+    display: inline-flex; /* Ensure button is inline-flex */
+}
+
+.profile-container {
+    display: flex;
+    
+    align-items: center;
+    flex-direction: row;
+    margin-top: 50px;
+}
+
+.profile-container p {
+    font-size: 25px;
+    margin-left: 20px;
+}
