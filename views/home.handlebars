@@ -50,7 +50,6 @@
 
 {{! JavaScript for Emoji Integration }}
 <script>
-
 /*
  You want to show a subset of the emojis. About 200. However,
  you also want the user to be able to search all emojis,
@@ -58,13 +57,14 @@
  that you have them.
 */
 
-let allEmojis = [];  // Global list to hold all emojis
+require('dotenv').config();
+//const emojiKey = process.env.EMOJI_API_KEY;
 const emojiKey = '3bca50a709dc2b1148eb598ad6bc2ed4fbf81397';
+let allEmojis = [];  // Global list to hold all emojis
 
 function toggleEmojiPanel() {
     const container = document.getElementById('emoji-container');
     container.style.display = container.style.display === 'none' ? 'block' : 'none';
-
 
     if(container.style.display === 'block' && allEmojis.length == 0){
         // go "Fetch" you some emojis and show them off with displayEmojies

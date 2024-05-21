@@ -12,6 +12,7 @@
   "license": "ISC",
   "dependencies": {
     "canvas": "^2.11.2",
+    "dotenv": "^16.4.5",
     "emoji-api": "^3.0.1",
     "express": "^4.19.2",
     "express-handlebars": "^7.1.2",
