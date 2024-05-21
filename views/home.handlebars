@@ -22,7 +22,10 @@
 
             <div id="emoji-container" class="emoji-panel" style="display: none;">
                 <!-- input field for the emoji search, use oninput="searchEmojis() -->
+                <input type="text" id="emoji-search" placeholder="Search for emojis" oninput="searchEmojis()">
                 <!-- a div, id = "emoji-grid" -->
+                <div id="emoji-grid">
+                </div>
             </div>
         </section>
     {{/if}}
@@ -56,6 +59,7 @@
 */
 
 let allEmojis = [];  // Global list to hold all emojis
+const emojiKey = '3bca50a709dc2b1148eb598ad6bc2ed4fbf81397';
 
 function toggleEmojiPanel() {
     const container = document.getElementById('emoji-container');
@@ -64,6 +68,19 @@ function toggleEmojiPanel() {
 
     if(container.style.display === 'block' && allEmojis.length == 0){
         // go "Fetch" you some emojis and show them off with displayEmojies
+        fetch(`https://emoji-api.com/emojis?access_key=${emojiKey}`, {
+            method: 'GET',
+        })
+        .then(response => response.json()) // Convert the response to JSON
+        .then(data => {
+            allEmojis = data; // Save the data to the allEmojis array
+            displayEmojis(allEmojis); // Display the emojis
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    } else {
+        displayEmojis(allEmojis);
     }
 }
 
@@ -89,17 +106,16 @@ function searchEmojis() {
     // array.filter takes a predicate
     // use string.includes. 
 
-    const filteredEmojis = allEmojis.filter();
+    const filteredEmojis = allEmojis.filter(emoji => emoji.slug.toLowerCase().includes(searchTerm));
     
     displayEmojis(filteredEmojis);
 }
 
 function insertEmoji(emoji) {
-    // put an emoji on a form somehow. 
-
-    // do this when you're doing getting the emoji on the form
-    //
-    textarea.focus();  // Keep focus on the textarea
+    const textarea = document.querySelector('textarea[name="content"]'); // Select the textarea
+    const cursorPosition = textarea.selectionStart; // Get the cursor position
+    textarea.value = textarea.value.substring(0, cursorPosition) + emoji + textarea.value.substring(cursorPosition); // Insert the emoji at the cursor position
+    textarea.focus(); // Keep focus on the textarea
 }
 </script>
 
