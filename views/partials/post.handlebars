@@ -3,6 +3,7 @@
     <div class="post-avatar">
         <!-- the user's avatar -->
         <img src="{{this.user.avatar_url}}" alt="{{this.user.username}}'s avatar">
+        <h4>{{this.user.username}}</h4>
     </div>
     <div class="post-content preserve-newlines">
         <!-- the post -->
@@ -11,7 +12,10 @@
         <div class="post-status-bar">
             <!-- everything that is shown in the status bar -->
             <button class="like-button" data-id="{{this.id}}" onclick="handleLikeClick(event)">♥</button>
-            <p>{{this.likes}}</p>
+            {{#if error}}
+                <p style="color: red;">{{error}}</p>
+            {{/if}}
+            <p>{{this.likes.length}}</p>
             {{#ifCond this.user.username ../user.username}}
                 <button class="delete-button" data-id="{{this.id}}" onclick="handleDeleteClick(event)"><i class="fas fa-trash-alt"></i></button>
             {{/ifCond}}
@@ -19,20 +23,18 @@
     </div>
 </div>
 <script>
-
     function handleLikeClick(event) {
         const postId = event.target.getAttribute('data-id');
+        console.log("post id liked:", postId);
 
         // Fetch request to like the post
-        fetch(`/posts/${postId}/like`, {
+        fetch(`/like/${postId}`, {
             method: 'POST',
-        }).then(response => {
-            if (response.ok) {
-                // Update the UI to reflect the new like
-            } else {
-                console.error('Failed to like post');
-            }
-        });       
+        }).then(response => response.json())
+        .then(post => {
+            //  Update like count display
+            event.target.nextElementSibling.textContent = post.likes.length;
+        }).catch(error => { console.log("Failed to like post", error); })
     }
 
     function handleDeleteClick(event) {

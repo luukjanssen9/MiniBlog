@@ -103,7 +103,7 @@ app.get('/', (req, res) => {
     const posts = getPosts();
     const user = getCurrentUser(req);
     if (!user) {
-        console.log("user not found");
+        console.log("user not found a");
     }
     res.render('home', { posts, user });
 });
@@ -119,8 +119,14 @@ app.get('/register', (req, res) => {
 app.get('/login', (req, res) => {
     res.render('loginRegister', { 
         loginError: req.query.error,
-        });
+    });
 });
+// Like route GET route is used for error response from login
+//
+// app.get('/like', (req, res) => {
+//     const error = req.query.error;
+//     res.render('partials/post', { error });
+// });
 
 // Error route: render error page
 //
@@ -131,7 +137,16 @@ app.get('/error', (req, res) => {
 // Additional routes that you must implement
 
 app.get('/post/:id', (req, res) => {
-    // TODO: Render post detail page
+    // Find the post by ID
+    const post = posts.find(post => post.id === Number(req.params.id));
+    // If the post was not found, render the error page
+    if (!post) {
+        res.render('error', { message: 'Post not found' });
+        return;
+    }
+
+    // Render the post detail page with the post
+    res.render('partials/post', { post });
 });
 app.post('/posts', (req, res) => {
     // TODO: Add a new post and redirect to home
@@ -179,8 +194,8 @@ let users = [
     { id: 2, username: 'AnotherUser', avatar_url: undefined, memberSince: '2024-01-02 09:00' },
 ];
 let posts = [
-    { id: 1, title: 'Sample Post', content: 'This is a sample post.', user: users[0], timestamp: '2024-01-01 10:00', likes: 0 },
-    { id: 2, title: 'Another Post', content: 'This is another sample post.', user: users[1], timestamp: '2024-01-02 12:00', likes: 0 },
+    { id: 1, title: 'Sample Post', content: 'This is a sample post.', user: users[0], timestamp: '2024-01-01 10:00', likes: [] },
+    { id: 2, title: 'Another Post', content: 'This is another sample post.', user: users[1], timestamp: '2024-01-02 12:00', likes: [] },
 ];
 
 // Function to find a user by username
@@ -252,14 +267,7 @@ function loginUser(req, res) {
         req.session.userId = user.id;
         req.session.loggedIn = true;
         req.session.user = user;
-        req.session.save(err => {
-            if (err) {
-                // handle error
-                console.log(err);
-            } else {
-                res.redirect('/');
-            }
-        });
+        res.redirect('/');
     } else {
         // Invalid username or password
         res.redirect('/login?error=Invalid+username+or+password');
@@ -285,7 +293,6 @@ function logoutUser(req, res) {
 function renderProfile(req, res) {
     const user = req.session.user;
     const userPosts = posts.filter(post => post.user.username === user.username);
-    console.log("Post length = ", userPosts.length);
     res.render('profile', { user, posts: userPosts });
 }
 
@@ -294,11 +301,18 @@ function updatePostLikes(req, res) {
     //  get post from request params
     const postId = parseInt(req.params.id);
     const post = posts.find(post => post.id === postId);
-    //  increment likes
-    if (post) {
-        post.likes += 1;
+    //  increment / decrement likes
+    if (req.session.loggedIn && !post.likes.includes(req.session.user.useriD)) {
+        post.likes.push(req.session.user.useriD);
+    } else if (req.session.loggedIn) {  //  if logged in and already liked, remove like
+        post.likes = post.likes.filter(userId => userId !== req.session.user.id);
+    } else {
+        // res.status(401).json({ error: "Must be logged in to like" });
+        // res.status(401).json({ error: 'Must be logged in to like' });
+        console.log("Must be logged in to like")
+        return;
     }
-    res.redirect(`/post/${postId}`);t
+    res.json(posts.find(post => post.id === Number(req.params.id)));
 }
 
 // Function to handle avatar generation and serving
@@ -327,7 +341,7 @@ function handleAvatar(req, res) {
         user.avatar_url = `/images/${username}.png`;
 
     } else {
-        res.status(404).send('User not found');
+        res.status(404).send('User not found b');
     }
 }
 
