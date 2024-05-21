@@ -41,14 +41,17 @@
 
     function handleDeleteClick(event) {
         const buttonElement = event.target.closest('.delete-button');
-        const postId = buttonElement.getAttribute('data-id');        
+        const postId = buttonElement.getAttribute('data-id');     
+        const postElement = event.target.closest('.post'); // Get the post element   
+        
 
         // Fetch request to delete the post
-        fetch(`/posts/${postId}`, {
+        fetch(`/delete/${postId}`, {
             method: 'DELETE',
         }).then(response => {
             if (response.ok) {
                 // Remove the post from the UI
+                postElement.remove();
             } else {
                 console.error('Failed to delete post');
             }
