@@ -18,7 +18,7 @@
                 <p style="color: red;">{{error}}</p>
             {{/if}}
             <p>{{this.likes.length}}</p>
-            {{#ifCond poster.username currUser.username}}
+            {{#ifCond this.username user}}
                 <button class="delete-button" data-id="{{this.id}}" onclick="handleDeleteClick(event)"><i class="fas fa-trash-alt"></i></button>
             {{/ifCond}}
         </div>        
