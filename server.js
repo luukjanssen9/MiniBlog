@@ -4,6 +4,10 @@ const session = require('express-session');
 const canvas = require('canvas');
 const fs = require('fs');
 const path = require('path');
+const sqlite = require('sqlite');
+const sqlite3 = require('sqlite3');
+const { initializeDB } = require('./populatedb');
+
 // require('dotenv').config();
 
 
@@ -61,7 +65,7 @@ app.engine(
 );
 
 app.set('view engine', 'handlebars');
-app.set('views',  'views');
+app.set('views', 'views');
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Middleware
@@ -104,8 +108,8 @@ app.use(express.json());                            // Parse JSON bodies (as sen
 // We pass the posts and user variables into the home
 // template
 //
-app.get('/', (req, res) => {
-    const allPosts = getPosts();
+app.get('/', async (req, res) => {
+    const allPosts = await getPosts();
     const user = req.session.user;
     
     res.render('home', { posts: allPosts, user });
@@ -133,9 +137,9 @@ app.get('/error', (req, res) => {
 
 // Additional routes that you must implement
 
-app.get('/post/:id', (req, res) => {
+app.get('/post/:id', async (req, res) => {
     // Find the post by ID
-    const post = posts.find(post => post.id === Number(req.params.id));
+    const post = await findPostById(req.params.id);
     // If the post was not found, render the error page
     if (!post) {
         res.render('error', { message: 'Post not found' });
@@ -147,47 +151,47 @@ app.get('/post/:id', (req, res) => {
 });
 
 //  make a post
-app.post('/posts', (req, res) => {
-    addPost(req.body.title, req.body.content, req.session.user.username);
+app.post('/posts', async (req, res) => {
+    await addPost(req.body.title, req.body.content, req.session.user.username);
     res.redirect('/');
 });
 
 //  like a post
-app.post('/like/:id', (req, res) => {
-    updatePostLikes(req, res);
+app.post('/like/:id', async (req, res) => {
+    await updatePostLikes(req, res);
 });
 
-app.get('/profile', isAuthenticated, (req, res) => {
-    renderProfile(req, res);
+app.get('/profile', isAuthenticated, async (req, res) => {
+    await renderProfile(req, res);
 });
 
 app.get('/avatar/:username', (req, res) => {
-    const avatarPath = path.join(__dirname, 'public', 'images', `${req.params.username}.png`);
-        if (fs.existsSync(avatarPath)) {
-            res.sendFile(avatarPath);
-        } else {
-            res.status(404).send('Avatar not found');
-        }
+    const avatarURL = path.join(__dirname, 'public', 'images', `${req.params.username}.png`);
+    if (fs.existsSync(avatarURL)) {
+        res.sendFile(avatarURL);
+    } else {
+        res.status(404).send('Avatar not found');
+    }
 });
 
-app.post('/register', (req, res) => {
-    registerUser(req, res);
+app.post('/register', async (req, res) => {
+    await registerUser(req, res);
 });
 
-app.post('/login', (req, res) => {
-    loginUser(req, res);
+app.post('/login', async (req, res) => {
+    await loginUser(req, res);
 });
 
 app.get('/logout', (req, res) => {
     logoutUser(req, res);
 });
 
-app.delete('/delete/:id', isAuthenticated, (req, res) => {
-    len1 = posts.length;
-    posts = posts.filter(post => post.id !== Number(req.params.id));
-    len2 = posts.length;
-    //  check if deleted from list by comparing length before and after
-    if (len1 == len2) {
+app.delete('/delete/:id', isAuthenticated, async (req, res) => {
+    const db = await sqlite.open({ filename: 'database.db', driver: sqlite3.Database });
+    const result = await db.run('DELETE FROM posts WHERE id = ?', [req.params.id]);
+    await db.close();
+
+    if (result.changes === 0) {
         res.status(400).end();
     } else {
         res.status(200).end();
@@ -198,55 +202,48 @@ app.delete('/delete/:id', isAuthenticated, (req, res) => {
 // Server Activation
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
+initializeDB().then(() => {
+    app.listen(PORT, () => {
+        console.log(`Server is running on http://localhost:${PORT}`);
+    });
+}).catch(err => {
+    console.error('Failed to initialize the database:', err);
 });
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Support Functions and Variables
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-// Example data for posts and users
-
-let users = [
-    { id: 0, username: undefined, avatarUrl: undefined, memberSince: undefined },
-    { id: 1, username: 'AnotherUser', avatarUrl: undefined, memberSince: '2024-01-02 09:00' },
-    { id: 2, username: 'SampleUser', avatarUrl: undefined, memberSince: '2024-01-02 10:00' },
-];
-let posts = [
-    { id: 0, title: 'Sample Post', content: 'This is a sample post.', username: users[2].username, avatarUrl: `/avatar/${users[2].username}`, timestamp: '2024-01-01 10:00', likes: [] },
-    { id: 1, title: 'Another Post', content: 'This is another sample post.', username: users[1].username, avatarUrl: `/avatar/${users[1].username}`, timestamp: '2024-01-02 12:00', likes: [] },
-];
 
 // Function to find a user by username
-function findUserByUsername(username) {
-    for (let i = 0; i < users.length; i++) {
-        if (users[i].username == username) {
-            return users[i];
-        }
-    }
-    return undefined;
+async function findUserByUsername(username) {
+    // open database
+    const db = await sqlite.open({ filename: 'database.db', driver: sqlite3.Database });
+    // find user by username
+    const user = await db.get('SELECT * FROM users WHERE username = ?', [username]);
+    await db.close();
+    return user;
 }
 
 // Function to add a new user
-function addUser(username, password) {
+async function addUser(username) {
+    const db = await sqlite.open({ filename: 'database.db', driver: sqlite3.Database });
+
     const avatar = generateAvatar(username[0]);
     const avatarPath = path.join(__dirname, 'public', 'images', `${username}.png`);
-    const user = {
-        id: users.length,
-        username: username,
-        avatarUrl: `/images/${username}.png`,
-        memberSince: new Date()
-    };
-    
+    const avatarUrl = `/images/${username}.png`;
+    const memberSince = new Date().toISOString();
+
     // Save the avatar to the file system
-    fs.promises.writeFile(avatarPath, avatar)
-        .then(() => {
-            users.push(user);
-        })
-        .catch(err => {
-            console.error('Error saving avatar:', err);
-        });
+    await fs.promises.writeFile(avatarPath, avatar);
+
+    // Insert the new user into the database
+    await db.run(
+        'INSERT INTO users (username, avatar_url, memberSince) VALUES (?, ?, ?)',
+        [username, avatarUrl, memberSince]
+    );
+
+    await db.close();
 }
 
 // Middleware to check if user is authenticated
@@ -259,39 +256,46 @@ function isAuthenticated(req, res, next) {
 }
 
 // Function to register a user
-function registerUser(req, res) {
+async function registerUser(req, res) {
     const username = req.body.username;
-    //const password = req.body.password;
-    if (findUserByUsername(username) !== undefined) {
-        // username already exists
-        res.redirect('/register?error=Username+already+exists');
-    } else {
-        // add the new user
-        addUser(username);
-        res.redirect('/login');
+
+    try {
+        const db = await sqlite.open({ filename: 'database.db', driver: sqlite3.Database });
+
+        const userExists = await db.get('SELECT 1 FROM users WHERE username = ?', [username]);
+
+        if (userExists) {
+            res.redirect('/register?error=Username+already+exists');
+        } else {
+            await addUser(username);
+            res.redirect('/login');
+        }
+
+        await db.close();
+    } catch (error) {
+        console.error('Error registering user:', error);
+        res.redirect('/register?error=An+error+occurred');
     }
 }
 
 // Function to login a user
-function loginUser(req, res) {
+async function loginUser(req, res) {
     const username = req.body.username;
-    const user = findUserByUsername(username);
+    const user = await findUserByUsername(username);
 
     if (user) {
-        // Successful login
         req.session.userId = user.id;
         req.session.loggedIn = true;
         req.session.user = user;
         res.redirect('/');
     } else {
-        // Invalid username or password
         res.redirect('/login?error=Invalid+username+or+password');
     }
 }
 
 // Function to logout a user
 function logoutUser(req, res) {
-    req.session.loggedId = false;
+    req.session.loggedIn = false;
     req.session.user = {};
     req.session.userId = '';
     res.clearCookie('connect.sid');
@@ -299,49 +303,50 @@ function logoutUser(req, res) {
 }
 
 // Function to render the profile page
-function renderProfile(req, res) {
+async function renderProfile(req, res) {
     const user = req.session.user;
-    const userPosts = posts.filter(post => post.username === user.username);
+    const db = await sqlite.open({ filename: 'database.db', driver: sqlite3.Database });
+    const userPosts = await db.all('SELECT * FROM posts WHERE username = ?', [user.username]);
+    await db.close();
     res.render('profile', { user, posts: userPosts });
 }
 
 // Function to update post likes
-function updatePostLikes(req, res) {
+async function updatePostLikes(req, res) {
     const postId = parseInt(req.params.id);
-    const post = posts.find(post => post.id === postId);
-    //  if user is logged in, can interact with likes
+    const db = await sqlite.open({ filename: 'database.db', driver: sqlite3.Database });
+    const post = await db.get('SELECT * FROM posts WHERE id = ?', [postId]);
+
     if (req.session.loggedIn) {
-        //  if not alread liked, increment likes
-        if (!post.likes.includes(req.session.user.id)) {
-            post.likes.push(req.session.user.id);
-        //  otherwise decrement
-        } else {
-            post.likes = post.likes.filter(userId => userId !== req.session.user.id);
-        }
-        res.json({ success: true, likes: post.likes });
+        const likes = post.likes + 1;
+        await db.run('UPDATE posts SET likes = ? WHERE id = ?', [likes, postId]);
+        res.json({ success: true, likes });
     } else {
         res.json({ success: false, message: 'Not logged in' });
     }
+
+    await db.close();
 }
 
 // Function to get all posts, sorted by latest first
-function getPosts() {
-    return posts.slice().reverse();
+async function getPosts() {
+    const db = await sqlite.open({ filename: 'database.db', driver: sqlite3.Database });
+    const posts = await db.all(`
+        SELECT posts.*, users.avatar_url 
+        FROM posts 
+        JOIN users ON posts.username = users.username 
+        ORDER BY timestamp DESC
+    `);
+    await db.close();
+    return posts;
 }
 
 // Function to add a new post
-function addPost(title, content, username) {
-    const user = findUserByUsername(username);
-    const post = {
-        id: posts.length,
-        title: title,
-        content: content,
-        username: username,
-        avatarUrl: user.avatarUrl,
-        timestamp: new Date().toISOString(),
-        likes: []
-    };
-    posts.push(post);
+async function addPost(title, content, username) {
+    const db = await sqlite.open({ filename: 'database.db', driver: sqlite3.Database });
+    await db.run('INSERT INTO posts (title, content, username, timestamp, likes) VALUES (?, ?, ?, ?, ?)', 
+        [title, content, username, new Date().toISOString(), 0]);
+    await db.close();
 }
 
 // Function to generate an image avatar
@@ -365,4 +370,12 @@ function generateAvatar(letter, width = 100, height = 100) {
     context.fillText(letter.toUpperCase(), width / 2, height / 2);
 
     return avatarCanvas.toBuffer();
+}
+
+// Function to find a post by ID
+async function findPostById(id) {
+    const db = await sqlite.open({ filename: 'database.db', driver: sqlite3.Database });
+    const post = await db.get('SELECT * FROM posts WHERE id = ?', [id]);
+    await db.close();
+    return post;
 }

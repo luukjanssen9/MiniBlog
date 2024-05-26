@@ -2,7 +2,7 @@
 <div class="post">
     <div class="post-avatar">
         <!-- the user's avatar -->
-        <img src="{{this.avatarUrl}}"
+        <img src="{{this.avatar_url}}"
                     alt="{{this.username}}'s' Avatar" 
                     class="post-avatar">
         <h4>{{this.username}}</h4>
@@ -17,7 +17,7 @@
             {{#if error}}
                 <p style="color: red;">{{error}}</p>
             {{/if}}
-            <p>{{this.likes.length}}</p>
+            <p>{{this.likes}}</p>
             {{#ifCond this.username user}}
                 <button class="delete-button" data-id="{{this.id}}" onclick="handleDeleteClick(event)"><i class="fas fa-trash-alt"></i></button>
             {{/ifCond}}
