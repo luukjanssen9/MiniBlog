@@ -34,10 +34,17 @@
             method: 'POST',
         }).then(response => response.json())
         .then(post => {
-            //  Update like count display
-            event.target.nextElementSibling.textContent = post.likes.length;
-        }).catch(error => { console.log("Failed to like post", error); })
-    }
+            if (post.success) {
+                // Update like count display
+                event.target.nextElementSibling.textContent = post.likes;
+            } else {
+                console.error("Failed to like post", post.message);
+            }
+        }).catch(error => { 
+            console.log("Failed to like post", error); 
+        });
+}
+
 
     function handleDeleteClick(event) {
         const buttonElement = event.target.closest('.delete-button');
