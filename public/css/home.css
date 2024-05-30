@@ -14,10 +14,17 @@
 .content-container .post-form {
     background-color: #f9f9f9;
     padding: 20px;
+    padding-bottom: 50px;
     width: 40%; /* Set the width of the post form */
     box-shadow: 0 0 5px rgba(0,0,0,0.1); /* Optional: Add a shadow to the form */
     height: 400px;
-    margin-top: 20px;
+    margin-top: 55px;
+}
+
+.post-form h1 {
+    font-family: Arial, sans-serif;
+    font-size: 30px;
+    margin-left: 15px;
 }
 
 .content-container textarea {
@@ -68,6 +75,7 @@
 /* Posts List Styles */
 .content-container .posts-list {
     width: 60%; /* Set the width of the posts list */
+    margin: 0 auto; /* Center the div horizontally */
 }
 
 .content-container .posts-list ul {
@@ -80,18 +88,26 @@
     background-color: white;
     margin-bottom: 10px;
     border: 1px solid #ddd;
-    padding: 10px;
+    padding: 20px;
     display: flex; /* Use flexbox for the post layout */
     align-items: flex-start; /* Align items at the start */
     overflow: hidden; /* or auto, scroll */
     white-space: wrap; 
     text-overflow: ellipsis; /* Adds an ellipsis (...) for overflowing text */
     word-wrap: break-word; /* Ensures long words break and wrap */
+    flex-direction: column; /* Stack avatar and content vertically on small screens */
+}
        
+
+.content-container .post .post-avatar {
+    margin-right: 10px; /* Add some space between avatar and content */
+    display: flex; /* Use flexbox for the layout */
+    align-items: center; /* Align items vertically */
 }
 
-.content-container .posts-list .post-avatar {
-    margin-right: 10px; /* Add some space between avatar and content */
+.content-container .post h4 {
+    margin-left: 20px;
+    font-size: 20px;
 }
 
 .content-container .posts-list img {
@@ -126,7 +142,7 @@
 }
 
 /* Responsive Design */
-@media (max-width: 600px) {
+@media (max-width: 900px) {
     .content-container {
         flex-direction: column; /* Stack the sections vertically on small screens */
         padding: 10px;
@@ -137,12 +153,20 @@
         width: 90%; /* Make both sections full width on small screens */
     }
 
-    .content-container .posts-list .post {
-        flex-direction: column; /* Stack avatar and content vertically on small screens */
-    }
+   
 
     .content-container .posts-list .post-avatar {
         margin-right: 0; /* Remove right margin on small screens */
         margin-bottom: 10px; /* Add bottom margin for spacing */
     }
+}
+
+
+#sort-dropdown {
+    font-family: Arial, sans-serif;
+    font-size: 20px;
+    border-radius: 5px;
+    padding: 5px;
+    border: 1px solid #ddd;
+    box-sizing: border-box;
 }

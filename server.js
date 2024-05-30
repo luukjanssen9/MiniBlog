@@ -307,10 +307,16 @@ function logoutUser(req, res) {
 async function renderProfile(req, res) {
     const user = req.session.user;
     const db = await sqlite.open({ filename: 'database.db', driver: sqlite3.Database });
-    const userPosts = await db.all('SELECT * FROM posts WHERE username = ?', [user.username]);
+    const userPosts = await db.all(`
+        SELECT posts.*, users.avatar_url 
+        FROM posts 
+        JOIN users ON posts.username = users.username 
+        WHERE posts.username = ?
+    `, [user.username]);
     await db.close();
     res.render('profile', { user, posts: userPosts });
 }
+
 
 // Function to update post likes
 async function updatePostLikes(req, res) {
