@@ -19,6 +19,8 @@ const CLIENT_ID = process.env.CLIENT_ID;
 const CLIENT_SECRET = process.env.CLIENT_SECRET;
 const REDIRECT_URI = 'http://localhost:3000/auth/google/callback';
 const client = new OAuth2Client(CLIENT_ID, CLIENT_SECRET, REDIRECT_URI);
+const emojiAPIkey = process.env.EMOJI_KEY;
+
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -139,7 +141,7 @@ app.get('/', async (req, res) => {
     const allPosts = await getPosts(sort);
     const user = req.session.user;
 
-    res.render('home', { posts: allPosts, user, sort });
+    res.render('home', { posts: allPosts, user, sort, emojiKey: emojiAPIkey});
 });
 
 // register GET route is used for error response from registration
@@ -172,11 +174,13 @@ app.get('/auth/google/callback', async (req, res) => {
 
     // hash id
     const hashedGoogleId = crypto.createHash('sha256').update(googleId).digest('hex');
+    req.session.hashedGoogleId = hashedGoogleId;
+
     // check if the user exists in db
     const db = await sqlite.open({ filename: 'database.db', driver: sqlite3.Database });
     const user = await db.get('SELECT * FROM users WHERE hashedgoogleid = ?', [hashedGoogleId]);
     
-    // User exists, set session variables and redirect to home 
+    // if user exists, set session variables and redirect to home 
     if (user) {
         req.session.userId = user.id;
         req.session.loggedIn = true;
@@ -205,10 +209,9 @@ app.post('/registerUsername', async (req, res) => {
         res.render('registerUsername', { error: 'Username already exists' });
     } else {
         // else create a new user entry
-        const { lastID } = await db.run('INSERT INTO users (username) VALUES (?)', [username]);
+        addUser(req, username)
 
         // update session
-        req.session.userId = lastID;
         req.session.loggedIn = true;
 
         // redirect to home
@@ -332,22 +335,34 @@ async function findUserByUsername(username) {
 }
 
 // Function to add a new user
-async function addUser(username) {
+async function addUser(req, username) {
     const db = await sqlite.open({ filename: 'database.db', driver: sqlite3.Database });
 
     const avatar = generateAvatar(username[0]);
     const avatarPath = path.join(__dirname, 'public', 'images', `${username}.png`);
     const avatarUrl = `/images/${username}.png`;
     const memberSince = new Date().toISOString();
+    const hashedGoogleId = req.session.hashedGoogleId;
 
     // Save the avatar to the file system
     await fs.promises.writeFile(avatarPath, avatar);
 
     // Insert the new user into the database
     await db.run(
-        'INSERT INTO users (username, avatar_url, memberSince) VALUES (?, ?, ?)',
-        [username, avatarUrl, memberSince]
+        'INSERT INTO users (username, avatar_url, memberSince, hashedgoogleid) VALUES (?, ?, ?, ?)',
+        [username, avatarUrl, memberSince, hashedGoogleId]
     );
+
+    // get the last inserted row's ID
+    const row = await db.get('SELECT last_insert_rowid() as id');
+    req.session.userId = row.id;
+
+    req.session.user =  { 
+        username: username, 
+        hashedGoogleId: hashedGoogleId, 
+        avatar_url: avatarUrl,
+        memberSince: memberSince, 
+    }
 
     await db.close();
 }
