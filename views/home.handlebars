@@ -31,7 +31,11 @@
     {{/if}}
 
     <section class="posts-list">
-        <!-- recent posts -->
+        <!-- button to sort either by recency or by like count -->
+        <select id="sort-dropdown" onchange="handleSortChange(event)">
+            <option value="recent" {{#ifCond sort "recent"}}selected{{/ifCond}}>Sort by Recent</option>
+            <option value="likes" {{#ifCond sort "likes"}}selected{{/ifCond}}>Sort by Like Count</option>
+        </select>
 
         {{#if posts.length}}
         <ul>
@@ -116,6 +120,11 @@ function insertEmoji(emoji) {
     const cursorPosition = textarea.selectionStart; // Get the cursor position
     textarea.value = textarea.value.substring(0, cursorPosition) + emoji + textarea.value.substring(cursorPosition); // Insert the emoji at the cursor position
     textarea.focus(); // Keep focus on the textarea
+}
+
+function handleSortChange(event) {
+    const selectedSort = event.target.value;
+    window.location.href = `/?sort=${selectedSort}`;
 }
 </script>
 

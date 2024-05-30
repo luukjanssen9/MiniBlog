@@ -109,10 +109,11 @@ app.use(express.json());                            // Parse JSON bodies (as sen
 // template
 //
 app.get('/', async (req, res) => {
-    const allPosts = await getPosts();
+    const sort = req.query.sort || 'recent';
+    const allPosts = await getPosts(sort);
     const user = req.session.user;
-    
-    res.render('home', { posts: allPosts, user });
+
+    res.render('home', { posts: allPosts, user, sort });
 });
 
 // Register GET route is used for error response from registration
@@ -329,14 +330,21 @@ async function updatePostLikes(req, res) {
 }
 
 // Function to get all posts, sorted by latest first
-async function getPosts() {
+async function getPosts(sort) {
     const db = await sqlite.open({ filename: 'database.db', driver: sqlite3.Database });
-    const posts = await db.all(`
+    let query = `
         SELECT posts.*, users.avatar_url 
         FROM posts 
         JOIN users ON posts.username = users.username 
-        ORDER BY timestamp DESC
-    `);
+    `;
+
+    if (sort === 'likes') {
+        query += `ORDER BY likes DESC, timestamp DESC`;
+    } else {
+        query += `ORDER BY timestamp DESC`;
+    }
+
+    const posts = await db.all(query);
     await db.close();
     return posts;
 }
