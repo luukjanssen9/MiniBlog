@@ -7,9 +7,18 @@ const path = require('path');
 const sqlite = require('sqlite');
 const sqlite3 = require('sqlite3');
 const { initializeDB } = require('./populatedb');
+const crypto = require('crypto');
 
-// require('dotenv').config();
-
+const passport = require('passport');
+const GoogleStrategy = require('passport-google-oauth20').Strategy;
+const { google } = require('googleapis');
+const { OAuth2Client } = require('google-auth-library');
+const dotenv = require('dotenv');
+dotenv.config();
+const CLIENT_ID = process.env.CLIENT_ID;
+const CLIENT_SECRET = process.env.CLIENT_SECRET;
+const REDIRECT_URI = 'http://localhost:3000/auth/google/callback';
+const client = new OAuth2Client(CLIENT_ID, CLIENT_SECRET, REDIRECT_URI);
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -18,6 +27,23 @@ const { initializeDB } = require('./populatedb');
 
 const app = express();
 const PORT = 3000;
+
+// Configure passport
+passport.use(new GoogleStrategy({
+    clientID: CLIENT_ID,
+    clientSecret: CLIENT_SECRET,
+    callbackURL: `http://localhost:${PORT}/auth/google/callback`
+}, (token, tokenSecret, profile, done) => {
+    return done(null, profile);
+}));
+
+passport.serializeUser((user, done) => {
+    done(null, user);
+});
+
+passport.deserializeUser((obj, done) => {
+    done(null, obj);
+});
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -73,7 +99,7 @@ app.set('views', 'views');
 
 app.use(
     session({
-        secret: 'oneringtorulethemall',     // Secret key to sign the session ID cookie
+        secret: CLIENT_SECRET,              // Secret key to sign the session ID cookie
         resave: false,                      // Don't save session if unmodified
         saveUninitialized: false,           // Don't create session until something stored
         cookie: { secure: false },          // True if using https. Set to false for development without https
@@ -116,16 +142,86 @@ app.get('/', async (req, res) => {
     res.render('home', { posts: allPosts, user, sort });
 });
 
-// Register GET route is used for error response from registration
+// register GET route is used for error response from registration
 //
 app.get('/register', (req, res) => {
-    res.render('loginRegister', { regError: req.query.error });
+    // res.render('loginRegister', { regError: req.query.error });
+    res.redirect('/auth/google');
 });
 
-// Login route GET route is used for error response from login
+// redirect to Google's OAuth 2.0 server
+app.get('/auth/google', (req, res) => {
+    const url = client.generateAuthUrl({
+        access_type: 'offline',
+        scope: ['https://www.googleapis.com/auth/userinfo.email', 'https://www.googleapis.com/auth/userinfo.profile'],
+    });
+    res.redirect(url);
+});
+
+// handle OAuth server response
+app.get('/auth/google/callback', async (req, res) => {
+    const { code } = req.query;
+    const { tokens } = await client.getToken(code);
+
+    // get user identifier from token
+    const ticket = await client.verifyIdToken({
+        idToken: tokens.id_token,
+        audience: CLIENT_ID,
+    });
+    const { sub: googleId } = ticket.getPayload();
+
+    // hash id
+    const hashedGoogleId = crypto.createHash('sha256').update(googleId).digest('hex');
+    // check if the user exists in db
+    const db = await sqlite.open({ filename: 'database.db', driver: sqlite3.Database });
+    const user = await db.get('SELECT * FROM users WHERE hashedgoogleid = ?', [hashedGoogleId]);
+    
+    // User exists, set session variables and redirect to home 
+    if (user) {
+        req.session.userId = user.id;
+        req.session.loggedIn = true;
+        req.session.user = user;
+        res.redirect('/');
+    } else {
+        res.redirect('/registerUsername');
+    }
+
+    await db.close();
+});
+
+app.get('/registerUsername', (req, res) => {
+    res.render('registerUsername');
+});
+
+app.post('/registerUsername', async (req, res) => {
+    const { username } = req.body;
+
+    // check if username exists
+    const db = await sqlite.open({ filename: 'database.db', driver: sqlite3.Database });
+    const user = await db.get('SELECT * FROM users WHERE username = ?', [username]);
+    
+    // if username exists, re-render the form with an error message
+    if (user) {
+        res.render('registerUsername', { error: 'Username already exists' });
+    } else {
+        // else create a new user entry
+        const { lastID } = await db.run('INSERT INTO users (username) VALUES (?)', [username]);
+
+        // update session
+        req.session.userId = lastID;
+        req.session.loggedIn = true;
+
+        // redirect to home
+        res.redirect('/');
+    }
+
+    await db.close();
+});
+
+// login route GET route is used for error response from login
 //
 app.get('/login', (req, res) => {
-    res.render('loginRegister', { 
+    res.render('loginWithGoogle', { 
         loginError: req.query.error,
     });
 });
@@ -184,7 +280,16 @@ app.post('/login', async (req, res) => {
 });
 
 app.get('/logout', (req, res) => {
-    logoutUser(req, res);
+    req.session.destroy((err) => {
+        if (err) {
+            console.log(err);
+        }
+        res.redirect('/googleLogout');
+    });
+});
+
+app.get('/googleLogout', (req, res) => {
+    res.render('googleLogout');
 });
 
 app.delete('/delete/:id', isAuthenticated, async (req, res) => {
@@ -292,15 +397,6 @@ async function loginUser(req, res) {
     } else {
         res.redirect('/login?error=Invalid+username+or+password');
     }
-}
-
-// Function to logout a user
-function logoutUser(req, res) {
-    req.session.loggedIn = false;
-    req.session.user = {};
-    req.session.userId = '';
-    res.clearCookie('connect.sid');
-    res.redirect('/');
 }
 
 // Function to render the profile page
