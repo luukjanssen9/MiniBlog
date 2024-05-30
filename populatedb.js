@@ -25,33 +25,40 @@ async function initializeDB() {
         );
     `);
 
-    // Sample data - Replace these arrays with your own data
-    const users = [
-        { username: 'user1', hashedGoogleId: 'hashedGoogleId1', avatar_url: '/images/u1.png', memberSince: '2024-01-01 12:00:00' },
-        { username: 'user2', hashedGoogleId: 'hashedGoogleId2', avatar_url: '/images/u1.png', memberSince: '2024-01-02 12:00:00' }
-    ];
+    // Check if there are any users in the database
+    const existingUsers = await db.all('SELECT COUNT(*) as count FROM users');
+    if (existingUsers[0].count === 0) {
+        // Sample data - Replace these arrays with your own data
+        const users = [
+            { username: 'user1', hashedGoogleId: 'hashedGoogleId1', avatar_url: '/images/u1.png', memberSince: '2024-01-01 12:00:00' },
+            { username: 'user2', hashedGoogleId: 'hashedGoogleId2', avatar_url: '/images/u1.png', memberSince: '2024-01-02 12:00:00' }
+        ];
 
-    const posts = [
-        { title: 'First Post', content: 'This is the first post', username: 'user1', timestamp: '2024-01-01 12:30:00', likes: 0 },
-        { title: 'Second Post', content: 'This is the second post', username: 'user2', timestamp: '2024-01-02 12:30:00', likes: 0 }
-    ];
+        const posts = [
+            { title: 'First Post', content: 'This is the first post', username: 'user1', timestamp: '2024-01-01 12:30:00', likes: 0 },
+            { title: 'Second Post', content: 'This is the second post', username: 'user2', timestamp: '2024-01-02 12:30:00', likes: 0 }
+        ];
 
-    // Insert sample data into the database
-    await Promise.all(users.map(user => {
-        return db.run(
-            'INSERT INTO users (username, hashedGoogleId, avatar_url, memberSince) VALUES (?, ?, ?, ?)',
-            [user.username, user.hashedGoogleId, user.avatar_url, user.memberSince]
-        );
-    }));
+        // Insert sample data into the database
+        await Promise.all(users.map(user => {
+            return db.run(
+                'INSERT INTO users (username, hashedGoogleId, avatar_url, memberSince) VALUES (?, ?, ?, ?)',
+                [user.username, user.hashedGoogleId, user.avatar_url, user.memberSince]
+            );
+        }));
 
-    await Promise.all(posts.map(post => {
-        return db.run(
-            'INSERT INTO posts (title, content, username, timestamp, likes) VALUES (?, ?, ?, ?, ?)',
-            [post.title, post.content, post.username, post.timestamp, post.likes]
-        );
-    }));
+        await Promise.all(posts.map(post => {
+            return db.run(
+                'INSERT INTO posts (title, content, username, timestamp, likes) VALUES (?, ?, ?, ?, ?)',
+                [post.title, post.content, post.username, post.timestamp, post.likes]
+            );
+        }));
 
-    console.log('Database populated with initial data.');
+        console.log('Database populated with initial data.');
+    } else {
+        console.log('Database already has initial data, skipping population.');
+    }
+
     return db; // Add this line to return the db connection
 }
 

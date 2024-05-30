@@ -1,6 +1,7 @@
 /* Posts List Styles */
 .user-posts {
     width: 60%; /* Set the width of the posts list */
+    margin: 0 auto; /* Center the posts list horizontally */
 }
 
 .user-posts ul {
@@ -40,6 +41,7 @@
     font-size: 40px;
     margin-top: 8px;
     margin-bottom: 8px;
+    text-align: center;
 }
 
 .user-posts p {
@@ -61,13 +63,14 @@
 
 .profile-container {
     display: flex;
-    
-    align-items: center;
-    flex-direction: row;
-    margin-top: 50px;
+    flex-direction: column;
+    margin-top: 20px;
+    border: 1px solid black; /* Add a black border */
+    padding: 20px;
+    border-radius: 10px;;
 }
 
 .profile-container p {
     font-size: 25px;
-    margin-left: 20px;
+    
 }
