@@ -404,7 +404,6 @@ async function addUser(req, username) {
     // update session
     const row = await db.get('SELECT last_insert_rowid() as id');
     req.session.userId = row.id;
-    req.session.username = username;
     req.session.user =  { 
         username: username, 
         hashedGoogleId: hashedGoogleId, 
