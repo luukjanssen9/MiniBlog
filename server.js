@@ -212,12 +212,13 @@ app.post('/registerUsername', async (req, res) => {
         // check if creating a user or just updating the username
         if (req.session.loggedIn) {
             // update username in db
-            updateUsername(req, username);
-            // redirect to profile page
+            await updateUsername(req, username);
             res.redirect('/profile');
+
         } else {
             // create a new user in db
-            addUser(req, username);
+            await addUser(req, username);
+            console.log(req.session.user)
             // update session
             req.session.loggedIn = true;
             // redirect to home
@@ -400,10 +401,10 @@ async function addUser(req, username) {
         [username, avatarUrl, memberSince, hashedGoogleId]
     );
 
-    // get the last inserted row's ID
+    // update session
     const row = await db.get('SELECT last_insert_rowid() as id');
     req.session.userId = row.id;
-
+    req.session.username = username;
     req.session.user =  { 
         username: username, 
         hashedGoogleId: hashedGoogleId, 
