@@ -207,15 +207,22 @@ app.post('/registerUsername', async (req, res) => {
     // if username exists, re-render the form with an error message
     if (user) {
         res.render('registerUsername', { error: 'Username already exists' });
+
     } else {
-        // else create a new user entry
-        addUser(req, username)
-
-        // update session
-        req.session.loggedIn = true;
-
-        // redirect to home
-        res.redirect('/');
+        // check if creating a user or just updating the username
+        if (req.session.loggedIn) {
+            // update username in db
+            updateUsername(req, username);
+            // redirect to profile page
+            res.redirect('/profile');
+        } else {
+            // create a new user in db
+            addUser(req, username);
+            // update session
+            req.session.loggedIn = true;
+            // redirect to home
+            res.redirect('/');
+        }
     }
 
     await db.close();
@@ -334,17 +341,57 @@ async function findUserByUsername(username) {
     return user;
 }
 
+async function updateUsername(req, username) {
+    const db = await sqlite.open({ filename: 'database.db', driver: sqlite3.Database });
+
+    try {
+        // generate and save avatar for the updated username
+        const avatar = generateAvatar(username[0]);
+        const avatarPath = path.join(__dirname, 'public', 'images', `${username}.png`);
+        const avatarUrl = `/images/${username}.png`;
+        await fs.promises.writeFile(avatarPath, avatar);
+
+        // lock
+        await db.run('BEGIN TRANSACTION');
+
+        // update username and avatar URL in the users table
+        await db.run(
+            'UPDATE users SET username = ?, avatar_url = ? WHERE id = ?',
+            [username, avatarUrl, req.session.userId]
+        );
+
+        // update username in the posts table
+        await db.run(
+            'UPDATE posts SET username = ? WHERE username = ?',
+            [username, req.session.user.username]
+        );
+
+        // end lock for transaction
+        await db.run('COMMIT');
+
+        // update session
+        req.session.user.username = username;
+        req.session.user.avatar_url = avatarUrl;
+
+    } catch (error) {
+        await db.run('ROLLBACK');
+        console.error('Error updating username:', error);
+    } finally {
+        await db.close();
+    }
+}
+
+
 // Function to add a new user
 async function addUser(req, username) {
     const db = await sqlite.open({ filename: 'database.db', driver: sqlite3.Database });
 
+    // generate user fields
     const avatar = generateAvatar(username[0]);
     const avatarPath = path.join(__dirname, 'public', 'images', `${username}.png`);
     const avatarUrl = `/images/${username}.png`;
     const memberSince = new Date().toISOString();
     const hashedGoogleId = req.session.hashedGoogleId;
-
-    // Save the avatar to the file system
     await fs.promises.writeFile(avatarPath, avatar);
 
     // Insert the new user into the database
@@ -427,7 +474,6 @@ async function renderProfile(req, res) {
     await db.close();
     res.render('profile', { user, posts: userPosts });
 }
-
 
 // Function to update post likes
 async function updatePostLikes(req, res) {
