@@ -88,6 +88,19 @@ app.engine(
                 }
                 return options.inverse(this);
             },
+            getGames: function (posts) {
+                let sorted = [];
+                let titles = new Set();
+                 
+                posts.forEach((post) => {
+                    if (!titles.has(post.title)) {
+                        titles.add(post.title);
+                        sorted.push(`<option value="${post.title}" {{#ifCond gameTitle ""${post.title}}}selected{{/ifCond}}>${post.title}</option>`);
+                    }
+                });
+    
+                return sorted.join('');
+            }
         },
     })
 );
@@ -122,7 +135,7 @@ app.use((req, res, next) => {
     next();
 });
 
-app.use(express.static('public'));                 // Serve static files
+app.use(express.static('public'));                  // Serve static files
 app.use(express.urlencoded({ extended: true }));    // Parse URL-encoded bodies (as sent by HTML forms)
 app.use(express.json());                            // Parse JSON bodies (as sent by API clients)
 
@@ -138,10 +151,12 @@ app.use(express.json());                            // Parse JSON bodies (as sen
 //
 app.get('/', async (req, res) => {
     const sort = req.query.sort || 'recent';
-    const allPosts = await getPosts(sort);
+    const gameTitle = req.query.title || undefined;
+    const filteredPosts = await getFilteredPosts(sort, gameTitle);
+    const allGames = await getAllGames()
     const user = req.session.user;
 
-    res.render('home', { posts: allPosts, user, sort, emojiKey: emojiAPIkey});
+    res.render('home', { filteredPosts, user, sort, emojiKey: emojiAPIkey, gameTitle, allGames});
 });
 
 // register GET route is used for error response from registration
@@ -218,7 +233,6 @@ app.post('/registerUsername', async (req, res) => {
         } else {
             // create a new user in db
             await addUser(req, username);
-            console.log(req.session.user)
             // update session
             req.session.loggedIn = true;
             // redirect to home
@@ -493,7 +507,7 @@ async function updatePostLikes(req, res) {
 }
 
 // Function to get all posts, sorted by latest first
-async function getPosts(sort) {
+async function getFilteredPosts(sort, gameTitle) {
     const db = await sqlite.open({ filename: 'database.db', driver: sqlite3.Database });
     let query = `
         SELECT posts.*, users.avatar_url 
@@ -501,15 +515,27 @@ async function getPosts(sort) {
         JOIN users ON posts.username = users.username 
     `;
 
+    let posts = [];
     if (sort === 'likes') {
         query += `ORDER BY likes DESC, timestamp DESC`;
+        posts = await db.all(query);
+    } else if (sort === 'game' && gameTitle) {
+        query += `WHERE title = ? ORDER BY timestamp DESC`;
+        posts = await db.all(query, gameTitle);
     } else {
         query += `ORDER BY timestamp DESC`;
+        posts = await db.all(query);
     }
 
-    const posts = await db.all(query);
     await db.close();
     return posts;
+}
+
+async function getAllGames() {
+    const db = await sqlite.open({ filename: 'database.db', driver: sqlite3.Database });
+    let games = await db.all(`SELECT posts.title FROM posts`);
+    await db.close();
+    return games;
 }
 
 // Function to add a new post

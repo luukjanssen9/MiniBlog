@@ -30,16 +30,23 @@
         </section>
     {{/if}}
 
-    <section class="posts-list">
-        <!-- button to sort either by recency or by like count -->
-        <select id="sort-dropdown" onchange="handleSortChange(event)">
-            <option value="recent" {{#ifCond sort "recent"}}selected{{/ifCond}}>Sort by Recent</option>
-            <option value="likes" {{#ifCond sort "likes"}}selected{{/ifCond}}>Sort by Like Count</option>
-        </select>
+    <!-- button to sort either by recency or by like count -->
+    <select id="sort-dropdown" onchange="handleSortChange(event)">
+        <option value="recent" {{#ifCond sort "recent"}}selected{{/ifCond}}>Sort by Recent</option>
+        <option value="likes" {{#ifCond sort "likes"}}selected{{/ifCond}}>Sort by Like Count</option>
+        <option value="game" {{#ifCond sort "game"}}selected{{/ifCond}}>Sort by Game Title</option>
+    </select>
+    {{#ifCond sort "game"}}
+    {{!-- <input type="text" id="game-search" placeholder="Search for games" oninput="handleSortChange(event)"> --}}
+    <select id="game-dropdown" onchange="handleGameSelection(event)">
+        {{{getGames allGames}}}
+    </select>
+    {{/ifCond}}
 
-        {{#if posts.length}}
+    <section class="posts-list">
+        {{#if filteredPosts.length}}
         <ul>
-            {{#each posts}}
+            {{#each filteredPosts}}
                 <!-- you have to pass the user in to posts and this is the syntax -->
                 {{> post this user=../user.username }}            
             {{/each}}
@@ -121,8 +128,17 @@ function insertEmoji(emoji) {
 }
 
 function handleSortChange(event) {
-    const selectedSort = event.target.value;
-    window.location.href = `/?sort=${selectedSort}`;
+    const selectedSort = document.getElementById('sort-dropdown').value;
+    url = `/?sort=${selectedSort}`;
+    window.location.href = url;
+}
+
+function handleGameSelection(event) {
+    console.log("here");
+    const gameTitleInput = document.getElementById('game-dropdown').value;
+    console.log("searching by ", gameTitleInput);
+    let url = `/?sort=game&title=${encodeURIComponent(gameTitleInput)}`;
+    window.location.href = url;
 }
 </script>
 
