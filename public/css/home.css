@@ -169,4 +169,7 @@
     padding: 5px;
     border: 1px solid #ddd;
     box-sizing: border-box;
+    height: 40px;
+    margin-top: 20px;
+    margin-left: 20px;
 }

@@ -11,8 +11,8 @@
             <!-- make a header here -->
             <h1>Write a {{postNeoType}}!</h1>
             <form action="/posts" method="POST">
-                <input type="text" name="title" placeholder="Title" required>
-                <textarea name="content" placeholder="Content" required></textarea>
+                <input type="text" name="title" placeholder="Game Title" required>
+                <textarea name="content" placeholder="Tell the world about your game!" required></textarea>
 
                 <div class="form-actions">
                     <button type="button" class="emoji-button" onclick="toggleEmojiPanel()">😀</button> 
@@ -29,21 +29,22 @@
             </div>
         </section>
     {{/if}}
-
-    <!-- button to sort either by recency or by like count -->
-    <select id="sort-dropdown" onchange="handleSortChange(event)">
-        <option value="recent" {{#ifCond sort "recent"}}selected{{/ifCond}}>Sort by Recent</option>
-        <option value="likes" {{#ifCond sort "likes"}}selected{{/ifCond}}>Sort by Like Count</option>
-        <option value="game" {{#ifCond sort "game"}}selected{{/ifCond}}>Sort by Game Title</option>
-    </select>
-    {{#ifCond sort "game"}}
-    {{!-- <input type="text" id="game-search" placeholder="Search for games" oninput="handleSortChange(event)"> --}}
-    <select id="game-dropdown" onchange="handleGameSelection(event)">
-        {{{getGames allGames}}}
-    </select>
-    {{/ifCond}}
+    
+    
 
     <section class="posts-list">
+        <!-- button to sort either by recency or by like count -->
+        <select id="sort-dropdown" onchange="handleSortChange(event)">
+            <option value="recent" {{#ifCond sort "recent"}}selected{{/ifCond}}>Sort by Recent</option>
+            <option value="likes" {{#ifCond sort "likes"}}selected{{/ifCond}}>Sort by Like Count</option>
+            <option value="game" {{#ifCond sort "game"}}selected{{/ifCond}}>Sort by Game Title</option>
+        </select>
+        {{#ifCond sort "game"}}
+        {{!-- <input type="text" id="game-search" placeholder="Search for games" oninput="handleSortChange(event)"> --}}
+        <select id="game-dropdown" onchange="handleGameSelection(event)">
+            {{{getGames allGames}}}
+        </select>
+        {{/ifCond}}
         {{#if filteredPosts.length}}
         <ul>
             {{#each filteredPosts}}
