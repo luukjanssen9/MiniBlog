@@ -68,7 +68,6 @@
  that you have them.
 */
 
-const emojiKey = "{{emojiAPIkey}}";
 let allEmojis = [];  // Global list to hold all emojis
 
 function toggleEmojiPanel() {
@@ -76,18 +75,26 @@ function toggleEmojiPanel() {
     container.style.display = container.style.display === 'none' ? 'block' : 'none';
 
     if(container.style.display === 'block' && allEmojis.length == 0){
-        // go "Fetch" you some emojis and show them off with displayEmojies
-        fetch(`https://emoji-api.com/emojis?access_key=${emojiKey}`, {
-            method: 'GET',
-        })
-        .then(response => response.json()) // Convert the response to JSON
+        let emojiAPIkey;
+
+        // get emoji api key 
+        fetch('/api/emoji-key')
+        .then(response => response.json())
         .then(data => {
-            allEmojis = data; // Save the data to the allEmojis array
-            displayEmojis(allEmojis); // Display the emojis
+            // go "Fetch" you some emojis and show them off with displayEmojies
+            fetch(`https://emoji-api.com/emojis?access_key=${data.emojiAPIkey}`, {
+                method: 'GET',
+            })
+            .then(response => response.json()) // Convert the response to JSON
+            .then(data => {
+                allEmojis = data; // Save the data to the allEmojis array
+                displayEmojis(allEmojis); // Display the emojis
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
         })
-        .catch(error => {
-            console.error('Error:', error);
-        });
+        .catch(error => console.error('Error:', error));
     } else {
         displayEmojis(allEmojis);
     }
