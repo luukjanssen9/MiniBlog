@@ -19,6 +19,8 @@
     box-shadow: 0 0 5px rgba(0,0,0,0.1); /* Optional: Add a shadow to the form */
     height: 400px;
     margin-top: 55px;
+    border: 1px solid black;
+    border-radius: 5px;
 }
 
 .post-form h1 {
@@ -87,7 +89,8 @@
 .content-container .posts-list .post {
     background-color: white;
     margin-bottom: 10px;
-    border: 1px solid #ddd;
+    border: 1px solid black;
+    border-radius: 5px;
     padding: 20px;
     display: flex; /* Use flexbox for the post layout */
     align-items: flex-start; /* Align items at the start */
@@ -124,11 +127,13 @@
     
 }
 
-.content-container .posts-list p {
+.post-content.preserve-newlines p {
+    white-space: pre-wrap; /* Preserve newlines, but allow wrapping */
+    word-wrap: break-word; /* Ensure long words break and wrap */
     font-family: Arial, Helvetica, sans-serif;
     font-size: 25px;
-    
 }
+
 
 /* Post Status Bar Styles */
 .content-container .posts-list .post-status-bar {
@@ -165,9 +170,9 @@
 #sort-dropdown {
     font-family: Arial, sans-serif;
     font-size: 20px;
-    border-radius: 5px;
     padding: 5px;
-    border: 1px solid #ddd;
+    border: 1px solid black;
+    border-radius: 5px;
     box-sizing: border-box;
     height: 40px;
     margin-top: 20px;

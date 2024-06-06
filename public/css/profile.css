@@ -5,7 +5,6 @@
 }
 
 .user-posts ul {
-    list-style-type: none;
     padding: 10px;
     margin: 10px;
 }
@@ -13,21 +12,12 @@
 .user-posts .post {
     background-color: white;
     margin-bottom: 10px;
-    border: 1px solid #ddd;
-    padding: 10px;
-    display: flex; /* Use flexbox for the post layout */
+    border: 1px solid black;
+    padding: 20px;
+    display: block; /* Use block for normal flow layout */
     align-items: flex-start; /* Align items at the start */
-}
-
-.user-posts .post-avatar {
-    margin-right: 10px; /* Add some space between avatar and content */
-}
-
-.user-posts .posts-list .post {
-    overflow: hidden; /* or auto, scroll */
-    white-space: wrap; 
-    text-overflow: ellipsis; /* Adds an ellipsis (...) for overflowing text */
-    word-wrap: break-word; /* Ensures long words break and wrap */
+    flex-direction: column; /* Stack avatar and content vertically on small screens */
+    border-radius: 10px;
 }
 
 .user-posts img {
@@ -47,7 +37,8 @@
 .user-posts p {
     font-family: Arial, Helvetica, sans-serif;
     font-size: 25px;
-    
+    white-space: normal; /* Ensure this is set to normal */
+    word-wrap: break-word; /* Ensure this is set to break-word */
 }
 
 /* Post Status Bar Styles */
@@ -72,5 +63,4 @@
 
 .profile-container p {
     font-size: 25px;
-    
 }
