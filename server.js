@@ -160,14 +160,12 @@ app.get('/', async (req, res) => {
 });
 
 app.get('/api/emoji-key', (req, res) => {
-    console.log("emoji key:", process.env.EMOJI_KEY);
     res.json({ emojiAPIkey: process.env.EMOJI_KEY });
 });
 
 // register GET route is used for error response from registration
 //
 app.get('/register', (req, res) => {
-    // res.render('loginRegister', { regError: req.query.error });
     res.redirect('/auth/google');
 });
 

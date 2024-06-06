@@ -35,8 +35,8 @@ async function initializeDB() {
         ];
 
         const posts = [
-            { title: 'First Post', content: 'This is the first post', username: 'user1', timestamp: '2024-01-01 12:30:00', likes: 0 },
-            { title: 'Second Post', content: 'This is the second post', username: 'user2', timestamp: '2024-01-02 12:30:00', likes: 0 }
+            { title: 'Game 1', content: 'This is the first game review', username: 'user1', timestamp: '2024-01-01 12:30:00', likes: 0 },
+            { title: 'Game 2', content: 'This is the second game review', username: 'user2', timestamp: '2024-01-02 12:30:00', likes: 0 }
         ];
 
         // Insert sample data into the database
