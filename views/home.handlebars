@@ -1,0 +1,152 @@
+<link rel="stylesheet" href="/css/home.css">
+
+{{! Use the main layout }}
+{{!< main }}
+
+{{! New Post Submission Form }}
+<section class="content-container">
+    {{#if loggedIn}}
+        <!-- show the create post form when logged in -->
+        <section class="post-form">
+            <!-- make a header here -->
+            <h1>Write a {{postNeoType}}!</h1>
+            <form action="/posts" method="POST">
+                <input type="text" name="title" placeholder="Game Title" required>
+                <textarea name="content" placeholder="Tell the world about your game!" required></textarea>
+
+                <div class="form-actions">
+                    <button type="button" class="emoji-button" onclick="toggleEmojiPanel()">😀</button> 
+                    <button type="submit" class="post-button">Post</button>
+                </div>
+            </form>
+
+            <div id="emoji-container" class="emoji-panel" style="display: none;">
+                <!-- input field for the emoji search, use oninput="searchEmojis() -->
+                <input type="text" id="emoji-search" placeholder="Search for emojis" oninput="searchEmojis()">
+                <!-- a div, id = "emoji-grid" -->
+                <div id="emoji-grid">
+                </div>
+            </div>
+        </section>
+    {{/if}}
+    
+    
+
+    <section class="posts-list">
+        <!-- button to sort either by recency or by like count -->
+        <select id="sort-dropdown" onchange="handleSortChange(event)">
+            <option value="recent" {{#ifCond sort "recent"}}selected{{/ifCond}}>Sort by Recent</option>
+            <option value="likes" {{#ifCond sort "likes"}}selected{{/ifCond}}>Sort by Like Count</option>
+            <option value="game" {{#ifCond sort "game"}}selected{{/ifCond}}>Sort by Game Title</option>
+        </select>
+        {{#ifCond sort "game"}}
+        {{!-- <input type="text" id="game-search" placeholder="Search for games" oninput="handleSortChange(event)"> --}}
+        <select id="game-dropdown" onchange="handleGameSelection(event)">
+            {{{getGames allGames}}}
+        </select>
+        {{/ifCond}}
+        {{#if filteredPosts.length}}
+        <ul>
+            {{#each filteredPosts}}
+                <!-- you have to pass the user in to posts and this is the syntax -->
+                {{> post this user=../user.username }}            
+            {{/each}}
+        </ul>
+        {{else}}
+            <!-- no posts, oh no, what now? -->
+            <h2>Be the first to your {{postNeoType}} with the world!</h2>
+        {{/if}}
+    </section>
+</section>
+
+
+{{! JavaScript for Emoji Integration }}
+<script>
+/*
+ You want to show a subset of the emojis. About 200. However,
+ you also want the user to be able to search all emojis,
+ so, put them in this array when the array is empty so 
+ that you have them.
+*/
+
+let allEmojis = [];  // Global list to hold all emojis
+
+function toggleEmojiPanel() {
+    const container = document.getElementById('emoji-container');
+    container.style.display = container.style.display === 'none' ? 'block' : 'none';
+
+    if(container.style.display === 'block' && allEmojis.length == 0){
+        let emojiAPIkey;
+
+        // get emoji api key 
+        fetch('/api/emoji-key')
+        .then(response => response.json())
+        .then(data => {
+            // go "Fetch" you some emojis and show them off with displayEmojies
+            fetch(`https://emoji-api.com/emojis?access_key=${data.emojiAPIkey}`, {
+                method: 'GET',
+            })
+            .then(response => response.json()) // Convert the response to JSON
+            .then(data => {
+                allEmojis = data; // Save the data to the allEmojis array
+                displayEmojis(allEmojis); // Display the emojis
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        })
+        .catch(error => console.error('Error:', error));
+    } else {
+        displayEmojis(allEmojis);
+    }
+}
+
+function displayEmojis(emojis,limit=200) {
+    const container = document.getElementById('emoji-grid');
+    container.innerHTML = '';  // Clear previous results
+    if (Array.isArray(emojis) && emojis.length > 0) {
+        emojis.slice(0, limit).forEach(emoji => {
+            const emojiElement = document.createElement('span');
+            emojiElement.textContent = emoji.character;
+            emojiElement.title = emoji.slug;  // Showing the emoji name on hover
+            emojiElement.style.cursor = 'pointer';
+            emojiElement.onclick = () => insertEmoji(emoji.character);
+            container.appendChild(emojiElement);
+        });
+    } else {
+        container.textContent = 'No emojis found. Try a different search!';
+    }
+}
+
+function searchEmojis() {
+    const searchTerm = document.getElementById('emoji-search').value.toLowerCase();
+    // array.filter takes a predicate
+    // use string.includes. 
+
+    const filteredEmojis = allEmojis.filter(emoji => emoji.slug.toLowerCase().includes(searchTerm));
+    
+    displayEmojis(filteredEmojis);
+}
+
+function insertEmoji(emoji) {
+    const textarea = document.querySelector('textarea[name="content"]'); // Select the textarea
+    const cursorPosition = textarea.selectionStart; // Get the cursor position
+    textarea.value = textarea.value.substring(0, cursorPosition) + emoji + textarea.value.substring(cursorPosition); // Insert the emoji at the cursor position
+    textarea.focus(); // Keep focus on the textarea
+}
+
+function handleSortChange(event) {
+    const selectedSort = document.getElementById('sort-dropdown').value;
+    url = `/?sort=${selectedSort}`;
+    window.location.href = url;
+}
+
+function handleGameSelection(event) {
+    console.log("here");
+    const gameTitleInput = document.getElementById('game-dropdown').value;
+    console.log("searching by ", gameTitleInput);
+    let url = `/?sort=game&title=${encodeURIComponent(gameTitleInput)}`;
+    window.location.href = url;
+}
+</script>
+

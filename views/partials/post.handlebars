@@ -1,0 +1,69 @@
+{{! Partial for a single post }}
+<div class="post">
+    <div class="post-avatar">
+        <!-- the user's avatar -->
+        <img src="{{this.avatar_url}}"
+                    alt="{{this.username}}'s' Avatar" 
+                    class="post-avatar">
+        <h4>{{this.username}}</h4>
+    </div>
+    <div class="post-content preserve-newlines">
+        <!-- the post -->
+        <h2>{{this.title}}</h2>
+        <p>{{this.content}}</p>
+        <div class="post-status-bar">
+            <!-- everything that is shown in the status bar -->
+            <button class="like-button" data-id="{{this.id}}" onclick="handleLikeClick(event)">♥</button>
+            {{#if error}}
+                <p style="color: red;">{{error}}</p>
+            {{/if}}
+            <p>{{this.likes}}</p>
+            {{#ifCond this.username user}}
+                <button class="delete-button" data-id="{{this.id}}" onclick="handleDeleteClick(event)"><i class="fas fa-trash-alt"></i></button>
+            {{/ifCond}}
+        </div>        
+    </div>
+</div>
+<script>
+    function handleLikeClick(event) {
+        const postId = event.target.getAttribute('data-id');
+        console.log("post id liked:", postId);
+
+        // Fetch request to like the post
+        fetch(`/like/${postId}`, {
+            method: 'POST',
+        }).then(response => response.json())
+        .then(post => {
+            if (post.success) {
+                // Update like count display
+                event.target.nextElementSibling.textContent = post.likes;
+            } else {
+                console.error("Failed to like post", post.message);
+            }
+        }).catch(error => { 
+            console.log("Failed to like post", error); 
+        });
+}
+
+
+    function handleDeleteClick(event) {
+        const buttonElement = event.target.closest('.delete-button');
+        const postId = buttonElement.getAttribute('data-id');     
+        const postElement = event.target.closest('.post'); // Get the post element   
+        
+
+        // Fetch request to delete the post
+        fetch(`/delete/${postId}`, {
+            method: 'DELETE',
+        })
+        .then(response => {
+            if (response.ok) {
+                // Remove the post from the UI
+                postElement.remove();
+            } else {
+                console.error('Failed to delete post');
+            }
+        });      
+        
+    }    
+</script>

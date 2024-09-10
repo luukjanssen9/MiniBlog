@@ -127,6 +127,10 @@
     
 }
 
+.post-content.preserve-newlines {
+    width: 100%;
+}
+
 .post-content.preserve-newlines p {
     white-space: pre-wrap; /* Preserve newlines, but allow wrapping */
     word-wrap: break-word; /* Ensure long words break and wrap */
