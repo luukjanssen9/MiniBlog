@@ -2,7 +2,6 @@
 .content-container {
     font-family: Arial, sans-serif;
     background-color: #f4f4f4;
-    max-width: 1500px; /* Increase the max-width to accommodate side-by-side layout */
     margin: auto;
     padding: 20px;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
