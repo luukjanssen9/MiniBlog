@@ -18,7 +18,7 @@
     width: 40%; /* Set the width of the post form */
     box-shadow: 0 0 5px rgba(0,0,0,0.1); /* Optional: Add a shadow to the form */
     height: 400px;
-    margin-top: 55px;
+    margin-top: 82px;
     border: 1px solid black;
     border-radius: 5px;
 }
@@ -27,6 +27,9 @@
     font-family: Arial, sans-serif;
     font-size: 30px;
     margin-left: 15px;
+}
+.post-form form {
+    margin-right: 20px;
 }
 
 .content-container textarea {
@@ -39,10 +42,12 @@
     margin: 10px;
     border: 1px solid #ddd;
     box-sizing: border-box;
+    border-radius: 5px;
 }
 
 .content-container .form-actions {
     text-align: right;
+    margin-left: 10px;
 }
 
 .content-container .button, 
@@ -54,6 +59,7 @@
     border: none;
     cursor: pointer;
     margin-left: 10px;
+    border-radius: 5px;
 }
 
 .content-container .button:hover, 
@@ -144,6 +150,7 @@
     display: flex; /* Use flexbox for the status bar layout */
     align-items: center; /* Center items vertically */
     gap: 10px; /* Add space between the button and paragraph */
+    height: 15px;
 }
 
 .content-container .like-button {
@@ -171,7 +178,7 @@
 }
 
 
-#sort-dropdown {
+#sort-dropdown,  #game-dropdown {
     font-family: Arial, sans-serif;
     font-size: 20px;
     padding: 5px;
@@ -181,4 +188,5 @@
     height: 40px;
     margin-top: 20px;
     margin-left: 20px;
+    width: 200px;
 }
