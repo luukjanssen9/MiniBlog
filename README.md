@@ -32,6 +32,7 @@ Before starting Miniblog, the primary goals were to develop a full-stack web app
 - **Database**: MySQL
 - **Authentication**: Google OAuth
 - **Version Control**: Git, GitHub
+- **API**: EmojiAPI
 
 ## Getting Started
 
