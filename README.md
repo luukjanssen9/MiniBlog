@@ -97,6 +97,7 @@ Once the app is running:
 
 Here's a brief overview of the project's folder structure:
 
+```
 ├── public/              # Static assets (CSS, JavaScript, Images)
 ├── views/               # Handlebars templates
 │   ├── layouts/         # Layout files
@@ -106,7 +107,7 @@ Here's a brief overview of the project's folder structure:
 ├── populatedb.js        # Script to populate database
 ├── showdb.js            # Script to show database for debugging
 └── server.js            # Entry point for the Node.js server
-
+```
 
 ## License
 
