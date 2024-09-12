@@ -97,17 +97,16 @@ Once the app is running:
 
 Here's a brief overview of the project's folder structure:
 
-\`\`\`
 ├── public/              # Static assets (CSS, JavaScript, Images)
 ├── views/               # Handlebars templates
 │   ├── layouts/         # Layout files
 │   ├── partials/        # Reusable components
 ├── .env                 # Environment variables (not included in the repo)
 ├── package.json         # NPM package file
-├── populatedb.js        # script to populate databse
-├── showdb.js            # script to show database for debugging
+├── populatedb.js        # Script to populate database
+├── showdb.js            # Script to show database for debugging
 └── server.js            # Entry point for the Node.js server
-\`\`\`
+
 
 ## License
 
